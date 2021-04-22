@@ -15,4 +15,8 @@ COPY . ${PROJECT_DIR}
 
 ENTRYPOINT ["/tini", "--"]
 
+# Needed to fix flaky startup
+# https://github.com/microsoft/playwright/issues/4033
+RUN npm install playwright
+
 CMD ["/usr/src/civiform-browser-tests/bin/wait_for_server_start_and_run_tests.sh"]
