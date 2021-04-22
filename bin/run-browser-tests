@@ -8,6 +8,10 @@ docker run --ipc=host --rm -it \
   -v "$(pwd)/browser-test/src:/usr/src/civiform-browser-tests/src" \
   -v "$(pwd)/browser-test/bin:/usr/src/civiform-browser-tests/bin" \
   -v "$(pwd)/browser-test/tmp:/usr/src/civiform-browser-tests/tmp" \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e DISPLAY=$DISPLAY \
+  -h $HOSTNAME \
+  -v $HOME/.Xauthority:$HOME/.Xauthority \
   --network browser-test_default \
   civiform-browser-test:latest \
   /usr/src/civiform-browser-tests/bin/wait_for_server_start_and_run_tests.sh \
