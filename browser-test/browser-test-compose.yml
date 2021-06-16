@@ -36,6 +36,7 @@ services:
       - "fake-idcs"
     ports:
       - 9999:9000
+      - 8457:8457
     environment:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
@@ -51,4 +52,4 @@ services:
       - BASE_URL=http://civiform:9000
       - CF_OPTIONAL_QUESTIONS
 
-    command: ~run -Dconfig.file=conf/application.dev.conf
+    command: ~run -jvm-debug "*:8457" -Dconfig.file=conf/application.dev.conf
