@@ -37,6 +37,7 @@ services:
     ports:
       - 9999:9000
       - 8457:8457
+      - 9998:9001
     environment:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
@@ -49,7 +50,7 @@ services:
       - ADFS_CLIENT_ID
       - ADFS_SECRET
       - DB_JDBC_STRING=jdbc:postgresql://database:5432/postgres
-      - BASE_URL=http://civiform:9000
+      - BASE_URL=https://civiform:9000
       - CF_OPTIONAL_QUESTIONS
 
-    command: ~run -jvm-debug "*:8457" -Dconfig.file=conf/application.dev.conf
+    command: ~run -jvm-debug "*:8457" -Dhttps.port=9000 -Dhttp.port=9001 -Dconfig.file=conf/application.dev.conf 

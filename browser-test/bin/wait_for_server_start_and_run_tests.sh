@@ -4,11 +4,12 @@ set -euo pipefail
 
 start_time=$(date +%s)
 deadline=$(($start_time + 200))
-server_url=http://civiform:9000
+https_url=https://civiform:9000
+http_url=http://civiform:9001
 
 echo polling to check server start
 
-until $(curl --output /dev/null --silent --head --fail --max-time 2 $server_url); do
+until $(curl --output /dev/null --silent --head --fail --max-time 2 $http_url); do
     if (( $(date +%s) > $deadline )); then
         echo "deadline exceeded waiting for server start"
         exit 1
@@ -26,8 +27,8 @@ for arg do
 done
 
 if (( $debug == 1 )); then
-    PWDEBUG=$PWDEBUG DEBUG=pw:api BASE_URL=$server_url yarn test $@
+    PWDEBUG=$PWDEBUG DEBUG=pw:api BASE_URL=$https_url yarn test $@
 else
-    BASE_URL=$server_url yarn test $@
+    BASE_URL=$https_url yarn test $@
 fi
 

@@ -6,7 +6,7 @@ export { AdminTranslations } from './admin_translations'
 export { AdminTIGroups } from './admin_ti_groups'
 export { ApplicantQuestions } from './applicant_questions'
 
-const { BASE_URL = 'http://civiform:9000', TEST_USER_LOGIN = '', TEST_USER_PASSWORD = '' } = process.env
+const { BASE_URL = 'https://civiform:9000', TEST_USER_LOGIN = '', TEST_USER_PASSWORD = '' } = process.env
 
 export const isLocalDevEnvironment = () => {
   return BASE_URL === 'http://civiform:9000' || BASE_URL === 'http://localhost:9999';
@@ -14,7 +14,7 @@ export const isLocalDevEnvironment = () => {
 
 export const startSession = async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ acceptDownloads: true });
+  const page = await browser.newPage({ acceptDownloads: true, ignoreHTTPSErrors: true });
 
   await page.goto(BASE_URL);
 

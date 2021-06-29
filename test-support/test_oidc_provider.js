@@ -6,10 +6,10 @@ const configuration = {
     response_types: ['id_token'],
     response_mode: ['form_post'],
     grant_types: ['implicit'],
-    // "native" because we're on localhost.
-    application_type: 'native',
+    // "web" because we're on docker.
+    application_type: 'web',
     scopes: ['openid', 'profile'],
-    redirect_uris: ['http://localhost:9000/callback/OidcClient', 'http://localhost:9000/callback/AdClient', 'http://localhost:19001/callback/OidcClient', 'http://localhost:19001/callback/AdClient'],
+    redirect_uris: ['https://civiform:9000/callback/OidcClient', 'https://civiform:9000/callback/AdClient', 'https://civiform:19001/callback/OidcClient', 'https://civiform:19001/callback/AdClient'],
   }],
   async findAccount(ctx, id) {
     return {
