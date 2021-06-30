@@ -44,11 +44,9 @@ services:
       - AWS_REGION
       - AWS_SES_SENDER
       - AWS_S3_BUCKET_NAME
-      - IDCS_CLIENT_ID=foo
-      - IDCS_SECRET=bar
+      - IDCS_CLIENT_ID=user
+      - IDCS_SECRET=foo
       - IDCS_DISCOVERY_URI=http://fake-idcs:3380/.well-known/openid-configuration
-      - ADFS_CLIENT_ID
-      - ADFS_SECRET
       - DB_JDBC_STRING=jdbc:postgresql://database:5432/postgres
       - BASE_URL=https://civiform:9000
       - CF_OPTIONAL_QUESTIONS

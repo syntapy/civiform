@@ -36,6 +36,8 @@ import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.pac4j.play.CallbackController;
 import org.pac4j.play.LogoutController;
 import org.pac4j.play.http.PlayHttpActionAdapter;
@@ -47,6 +49,7 @@ import repository.UserRepository;
 /** SecurityModule configures and initializes all authentication and authorization classes. */
 public class SecurityModule extends AbstractModule {
 
+  private static final Logger logger = LoggerFactory.getLogger(SecurityModule.class);
   private final com.typesafe.config.Config configuration;
   private final String baseUrl;
 
@@ -98,8 +101,7 @@ public class SecurityModule extends AbstractModule {
     bind(SessionStore.class).toInstance(sessionStore);
   }
 
-  @Provides
-  @Singleton
+  @Provides @Singleton
   protected GuestClient guestClient(ProfileFactory profileFactory) {
     return new GuestClient(profileFactory);
   }
@@ -117,8 +119,10 @@ public class SecurityModule extends AbstractModule {
   @IdcsOidcClient
   protected OidcClient provideIDCSClient(
       ProfileFactory profileFactory, Provider<UserRepository> applicantRepositoryProvider) {
+    logger.error("generating IDCS Client");
     if (!this.configuration.hasPath("idcs.client_id")
         || !this.configuration.hasPath("idcs.secret")) {
+      logger.error("no client id or secret");
       return null;
     }
     OidcConfiguration config = new OidcConfiguration();
@@ -127,11 +131,14 @@ public class SecurityModule extends AbstractModule {
     config.setDiscoveryURI(this.configuration.getString("idcs.discovery_uri"));
     config.setResponseMode("form_post");
     // Our local fake IDCS doesn't support 'token' auth.
-    if (baseUrl.contains("localhost:")) {
+    config.setResponseType("id_token");
+    /*if (baseUrl.contains("localhost:")) {
+      logger.error("using id_token only");
       config.setResponseType("id_token");
     } else {
+      logger.error("using id_token and token");
       config.setResponseType("id_token token");
-    }
+    }*/
     config.setUseNonce(true);
     config.setWithState(false);
     config.setScope("openid profile email");

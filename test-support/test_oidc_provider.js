@@ -1,16 +1,17 @@
 const { Provider } = require('oidc-provider');
 const configuration = {
   clients: [{
-    client_id: 'foo',
-    client_secret: 'bar',
+    client_id: 'user',
+    client_secret: 'foo',
     response_types: ['id_token'],
     response_mode: ['form_post'],
     grant_types: ['implicit'],
-    // "web" because we're on docker.
+    // "web" because we're on simulated network in docker.
     application_type: 'web',
     scopes: ['openid', 'profile'],
-    redirect_uris: ['https://civiform:9000/callback/OidcClient', 'https://civiform:9000/callback/AdClient', 'https://civiform:19001/callback/OidcClient', 'https://civiform:19001/callback/AdClient'],
-  }],
+    redirect_uris: ['https://civiform:9000/callback/OidcClient'],
+  }
+  ],
   async findAccount(ctx, id) {
     return {
       accountId: id,
