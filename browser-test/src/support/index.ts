@@ -6,10 +6,12 @@ export { AdminTranslations } from './admin_translations'
 export { AdminTIGroups } from './admin_ti_groups'
 export { ApplicantQuestions } from './applicant_questions'
 
-const { BASE_URL = 'https://civiform:9000', TEST_USER_LOGIN = '', TEST_USER_PASSWORD = '' } = process.env
+var assert = require('assert');
+
+export const { BASE_URL = 'https://civiform:9000', TEST_USER_LOGIN = 'user', TEST_USER_PASSWORD = 'foo' } = process.env
 
 export const isLocalDevEnvironment = () => {
-  return BASE_URL === 'http://civiform:9000' || BASE_URL === 'http://localhost:9999';
+  return BASE_URL === 'https://civiform:9000' || BASE_URL === 'https://localhost:9999';
 }
 
 export const startSession = async () => {
@@ -27,6 +29,10 @@ export const endSession = async (browser: Browser) => {
 
 export const gotoEndpoint = async (page: Page, endpoint: string) => {
   return await page.goto(BASE_URL + endpoint);
+}
+
+export const gotoRootUrl = async (page: Page) => {
+  await page.goto(BASE_URL);
 }
 
 export const logout = async (page: Page) => {
@@ -57,10 +63,36 @@ export const loginAsTestUser = async (page: Page) => {
   }
 }
 
+export const loginWithSimulatedIdcs = async (page: Page) => {
+  await page.click('#idcs');
+
+  let pg_source = await page.content();
+
+  if (pg_source.includes("Enter any login")) {
+    await page.click('css=[name=login]');
+    await page.keyboard.type('username');
+    await page.click('css=[name=password]');
+    await page.keyboard.type('password');
+
+    await page.click('.login-submit');
+  }
+
+  await page.click('.login-submit');
+}
+
 function isTestUser() {
   return TEST_USER_LOGIN !== '' && TEST_USER_PASSWORD !== ''
 }
 
+export const getUserId = async (page: Page) => {
+  let url = page.url();
+  await gotoEndpoint(page, '/users/me');
+  let user_id = await page.innerText('#applicant-id');
+
+  await page.goto(url);
+
+  return user_id;
+}
 
 export const userDisplayName = () => {
   if (isTestUser()) {
@@ -68,6 +100,18 @@ export const userDisplayName = () => {
   } else {
     return '<Anonymous Applicant>'
   }
+}
+
+export const assertEndpointEquals = async (page: Page, endpoint: string) => {
+  let url = await page.url();
+  let d_url = BASE_URL.concat(endpoint);
+
+  assert.equal(url, d_url);
+}
+
+export const assertPageIncludes = async (page: Page, substring: string) => {
+  let pg_source = await page.content();
+  assert(pg_source.includes(substring));
 }
 
 /**

@@ -130,15 +130,9 @@ public class SecurityModule extends AbstractModule {
     config.setSecret(this.configuration.getString("idcs.secret"));
     config.setDiscoveryURI(this.configuration.getString("idcs.discovery_uri"));
     config.setResponseMode("form_post");
+
     // Our local fake IDCS doesn't support 'token' auth.
-    config.setResponseType("id_token");
-    /*if (baseUrl.contains("localhost:")) {
-      logger.error("using id_token only");
-      config.setResponseType("id_token");
-    } else {
-      logger.error("using id_token and token");
-      config.setResponseType("id_token token");
-    }*/
+    config.setResponseType("id_token token");
     config.setUseNonce(true);
     config.setWithState(false);
     config.setScope("openid profile email");
