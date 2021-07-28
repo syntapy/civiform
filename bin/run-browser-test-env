@@ -12,10 +12,13 @@ fi
 # start localstack
 docker-compose -f browser-test/browser-test-compose.yml -f browser-test/browser-test-compose.dev.yml up -d localstack
 
+# force rebuild fake-idcs to make modifying oidc provider easy while iterating
+docker-compose -f browser-test/browser-test-compose.yml -f browser-test/browser-test-compose.dev.yml up -d  --build --force-recreate fake-idcs
+
 # wait till localstack running
 bin/localstack/wait http://localhost:6645
 
 # start everything else
-docker-compose -f browser-test/browser-test-compose.yml -f browser-test/browser-test-compose.dev.yml up
+docker-compose -f browser-test/browser-test-compose.yml -f browser-test/browser-test-compose.dev.yml up 
 
 popd
