@@ -1,0 +1,8 @@
+#!/bin/bash
+pushd $(git rev-parse --show-toplevel)
+
+set -e
+
+docker-compose -f browser-test/browser-test-compose.yml -f browser-test/browser-test-compose.dev.yml down
+
+popd
