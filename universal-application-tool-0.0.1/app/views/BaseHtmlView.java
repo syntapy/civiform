@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.function.Function;
 import play.i18n.Messages;
+import services.MessageKey;
 import play.mvc.Call;
 import play.mvc.Http;
 import services.applicant.ValidationErrorMessage;
@@ -74,8 +75,12 @@ public abstract class BaseHtmlView {
     return span(" ");
   }
 
-  protected static Tag period() {
-    return span(".");
+  protected static Tag comma(Messages messages) {
+    return span(messages.at(MessageKey.PUNCTUATION_COMMA.getKeyName()));
+  }
+
+  protected static Tag period(Messages messages) {
+    return span(messages.at(MessageKey.PUNCTUATION_PERIOD.getKeyName()));
   }
 
   protected static Tag spanNowrap(String tag) {

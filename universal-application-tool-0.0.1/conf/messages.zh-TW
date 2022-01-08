@@ -82,3 +82,23 @@ validation.idTooShort=必須至少包含 {0} 個字符。
 validation.idTooLong=必須最多包含 {0} 個字符。
 validation.numberRequired=必須只包含數字。
 adminValidation.multiOptionEmpty=多選題不能有空白選項。
+
+punctuation.period=。
+punctuation.comma=，
+
+error.not_found_title=很抱歉，我們丟失
+error.not_found_title_end=了頁面
+error.not_found_description_a=不過別擔心，好
+error.not_found_description_a_end=處還在。
+error.not_found_description_b_beginning=在
+error.not_found_description_link=主頁
+error.not_found_description_b=上找到
+error.not_found_description_b_end=它們
+
+
+
+error.img_caption_a=Photo by
+error.img_caption_b=Michael Dziedzic
+error.img_caption_c=on
+error.img_caption_d=Unsplash
+

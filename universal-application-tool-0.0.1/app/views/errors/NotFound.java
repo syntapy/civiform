@@ -66,7 +66,7 @@ public class NotFound extends BaseHtmlView {
                             messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B.getKeyName())),
                         space(),
                         span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_END.getKeyName())),
-                        period()))
+                        period(messages)))
                 .withClasses(ErrorStyles.P_MOBILE_INLINE))
         .withClasses(ErrorStyles.P_DESCRIPTION);
   }
@@ -90,7 +90,7 @@ public class NotFound extends BaseHtmlView {
                         a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
                             .withHref("/")
                             .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT),
-                        period()))
+                        period(messages)))
                 .withClasses(ErrorStyles.P_MOBILE_INLINE))
         .withClasses(ErrorStyles.P_DESCRIPTION);
   }
@@ -98,10 +98,12 @@ public class NotFound extends BaseHtmlView {
   private ContainerTag descriptionContent(Messages messages) {
     String messages_lang = messages.lang().code();
     String am_lang = MessageLang.AM.getLang();
+    String zh_TW_lang = MessageLang.ZH_TW.getLang();
 
     boolean is_am = messages_lang.equals(am_lang);
+    boolean is_zh_TW = messages_lang.equals(zh_TW_lang);
 
-    if (is_am) {
+    if (is_am || is_zh_TW) {
       return descriptionContentAmh(messages);
     }
 
