@@ -10,9 +10,13 @@ import static j2html.TagCreator.span;
 import com.google.inject.Inject;
 import j2html.tags.ContainerTag;
 import play.i18n.Messages;
+import play.i18n.MessagesApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.mvc.Http;
 import play.twirl.api.Content;
 import services.MessageKey;
+import services.MessageLang;
 import views.BaseHtmlView;
 import views.HtmlBundle;
 import views.LanguageSelector;
@@ -25,6 +29,8 @@ public class NotFound extends BaseHtmlView {
 
   private final ApplicantLayout layout;
   private final LanguageSelector languageSelector;
+
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Inject
   public NotFound(ApplicantLayout layout, LanguageSelector languageSelector) {
@@ -40,7 +46,32 @@ public class NotFound extends BaseHtmlView {
         .withClasses(ErrorStyles.H1_NOT_FOUND);
   }
 
-  private ContainerTag descriptionContent(Messages messages) {
+  private ContainerTag descriptionContentAmh(Messages messages) {
+    return div(
+            p(
+                    span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_A.getKeyName())),
+                    space(),
+                    spanNowrap(
+                        messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_A_END.getKeyName())),
+                    space())
+                .withClasses(ErrorStyles.P_MOBILE_INLINE),
+            p(
+                    span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_BEGINNING.getKeyName())),
+                    a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
+                            .withHref("/")
+                            .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT),
+                    space(),
+                    spanNowrap(
+                        span(
+                            messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B.getKeyName())),
+                        space(),
+                        span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_END.getKeyName())),
+                        period()))
+                .withClasses(ErrorStyles.P_MOBILE_INLINE))
+        .withClasses(ErrorStyles.P_DESCRIPTION);
+  }
+
+  private ContainerTag descriptionContentMain(Messages messages) {
     return div(
             p(
                     span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_A.getKeyName())),
@@ -64,9 +95,23 @@ public class NotFound extends BaseHtmlView {
         .withClasses(ErrorStyles.P_DESCRIPTION);
   }
 
+  private ContainerTag descriptionContent(Messages messages) {
+    String messages_lang = messages.lang().code();
+    String am_lang = MessageLang.AM.getLang();
+
+    boolean is_am = messages_lang.equals(am_lang);
+
+    if (is_am) {
+      return descriptionContentAmh(messages);
+    }
+
+    return descriptionContentMain(messages);
+  }
+
   private ContainerTag picture(Messages messages) {
     String img_author_url = "https://unsplash.com/@lazycreekimages";
     String img_url = "https://unsplash.com/photos/0W4XLGITrHg";
+
     return div(
         layout
             .viewUtils

@@ -81,3 +81,20 @@ validation.idTooShort=ቢያንስ {0} ቁምፊዎች መያዝ አለበት።
 validation.idTooLong=ቢበዛ {0} ቁምፊዎች መያዝ አለበት።
 validation.numberRequired=ቁጥሮችን ብቻ መያዝ አለበት።
 adminValidation.multiOptionEmpty=ብዙ አማራጭ ያላቸው ጥያቄዎች ባዶ አማራጮች ሊኖራቸው አይችልም።
+
+punctuation.period=።
+punctuation.comma=፣
+
+error.not_found_title=እናዝናለን ገጹ ጠፍ
+error.not_found_title_end=ቶብናል
+error.not_found_description_a=አይጨነቁ ፣ ግን ጥቅሞቹ 
+error.not_found_description_a_end=አሁንም አሉ።
+error.not_found_description_b_beginning=በ
+error.not_found_description_link=መነሻ ገጹ
+error.not_found_description_b=ላይ
+error.not_found_description_b_end=ያግኙዋቸው
+
+error.img_caption_a=Photo by
+error.img_caption_b=Michael Dziedzic
+error.img_caption_c=on
+error.img_caption_d=Unsplash
