@@ -10,10 +10,10 @@ import static j2html.TagCreator.span;
 import com.google.inject.Inject;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
-import play.i18n.Messages;
-import play.i18n.MessagesApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import play.i18n.Messages;
+import play.i18n.MessagesApi;
 import play.mvc.Http;
 import play.twirl.api.Content;
 import services.MessageKey;
@@ -69,35 +69,33 @@ public class NotFound extends BaseHtmlView {
     boolean is_am = messages_lang.equals(am_lang);
     boolean is_zh_TW = messages_lang.equals(zh_TW_lang);
 
-
     Tag SpnNW = spanNowrap();
 
     if (is_am || is_zh_TW) {
       de_a = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_BEGINNING.getKeyName()));
-      de_b = a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
-                              .withHref("/")
-                              .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
+      de_b =
+          a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
+              .withHref("/")
+              .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
       di = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_END.getKeyName()));
 
       return div(
-            p(da, db, dc, dd)
-              .withClasses(ErrorStyles.P_MOBILE_INLINE),
-            p(de_a, de_b, df, spanNowrap(dg, dh, di, dj))
-              .withClasses(ErrorStyles.P_MOBILE_INLINE)
-          ).withClasses(ErrorStyles.P_DESCRIPTION);
+              p(da, db, dc, dd).withClasses(ErrorStyles.P_MOBILE_INLINE),
+              p(de_a, de_b, df, spanNowrap(dg, dh, di, dj))
+                  .withClasses(ErrorStyles.P_MOBILE_INLINE))
+          .withClasses(ErrorStyles.P_DESCRIPTION);
     }
 
     de_a = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B.getKeyName()));
-    di = a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
-          .withHref("/")
-          .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
+    di =
+        a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
+            .withHref("/")
+            .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
 
     return div(
-          p(da, db, dc, dd)
-            .withClasses(ErrorStyles.P_MOBILE_INLINE),
-          p(de_a, df, spanNowrap(dg, dh, di, dj))
-            .withClasses(ErrorStyles.P_MOBILE_INLINE)
-        ).withClasses(ErrorStyles.P_DESCRIPTION);
+            p(da, db, dc, dd).withClasses(ErrorStyles.P_MOBILE_INLINE),
+            p(de_a, df, spanNowrap(dg, dh, di, dj)).withClasses(ErrorStyles.P_MOBILE_INLINE))
+        .withClasses(ErrorStyles.P_DESCRIPTION);
   }
 
   /*private ContainerTag descriptionContent(Messages messages) {
