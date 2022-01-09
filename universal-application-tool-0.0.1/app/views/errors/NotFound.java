@@ -71,6 +71,9 @@ public class NotFound extends BaseHtmlView {
 
     Tag SpnNW = spanNowrap();
 
+    // In amharic the word 'home page' is at the beginning of the sentence instead of the end
+    // And since its a link I need to do something like this to have the right element be a link
+    // Similar with traditional chinese (and other langs like korean, vietnamese, somali maybe?)
     if (is_am || is_zh_TW) {
       de_a = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_BEGINNING.getKeyName()));
       de_b =
