@@ -69,46 +69,35 @@ public class NotFound extends BaseHtmlView {
     boolean is_am = messages_lang.equals(am_lang);
     boolean is_zh_TW = messages_lang.equals(zh_TW_lang);
 
-    Tag PA = p();
-    Tag PB = p();
 
     Tag SpnNW = spanNowrap();
-
-    PA.with(da, db, dc, dd);
 
     if (is_am || is_zh_TW) {
       de_a = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_BEGINNING.getKeyName()));
       de_b = a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
                               .withHref("/")
                               .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
-      PB.with(de_a, de_b);
-    } else {
-      de_a = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B.getKeyName()));
-      PB.with(de_a);
-    }
-
-    PB.with(df);
-
-    SpnNW.with(dg, dh);
-
-    if (is_am || is_zh_TW) {
       di = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B_END.getKeyName()));
-      SpnNW.with(di);
-    } else {
-      di = a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
-                            .withHref("/")
-                            .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
-      SpnNW.with(di);
+
+      return div(
+            p(da, db, dc, dd)
+              .withClasses(ErrorStyles.P_MOBILE_INLINE),
+            p(de_a, de_b, df, spanNowrap(dg, dh, di, dj))
+              .withClasses(ErrorStyles.P_MOBILE_INLINE)
+          ).withClasses(ErrorStyles.P_DESCRIPTION);
     }
 
-    SpnNW.with(dj);
+    de_a = span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_B.getKeyName()));
+    di = a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
+          .withHref("/")
+          .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
 
-    PB.with(SpnNW);
-
-    PA.withClasses(ErrorStyles.P_MOBILE_INLINE);
-    PB.withClasses(ErrorStyles.P_MOBILE_INLINE);
-
-    return div(PA, PB).withClasses(ErrorStyles.P_DESCRIPTION);
+    return div(
+          p(da, db, dc, dd)
+            .withClasses(ErrorStyles.P_MOBILE_INLINE),
+          p(de_a, df, spanNowrap(dg, dh, di, dj))
+            .withClasses(ErrorStyles.P_MOBILE_INLINE)
+        ).withClasses(ErrorStyles.P_DESCRIPTION);
   }
 
   /*private ContainerTag descriptionContent(Messages messages) {
