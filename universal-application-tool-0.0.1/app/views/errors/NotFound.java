@@ -102,12 +102,10 @@ public class NotFound extends BaseHtmlView {
                         messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_A_END.getKeyName())),
                     space())
                 .withClasses(ErrorStyles.P_MOBILE_INLINE),
-            p(
-                spanNowrap(
+            p(spanNowrap(
                     a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
                         .withHref("/")
-                        .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT)
-                    ))
+                        .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT)))
                 .withClasses(ErrorStyles.P_HOMEPAGE, ErrorStyles.P_MOBILE_INLINE))
         .withClasses(ErrorStyles.P_DESCRIPTION);
   }
