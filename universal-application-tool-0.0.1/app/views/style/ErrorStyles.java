@@ -25,6 +25,9 @@ public final class ErrorStyles {
   public static final String P_MOBILE_INLINE =
       StyleUtils.joinStyles(Styles.INLINE, StyleUtils.responsiveSmall(Styles.BLOCK));
 
+  public static final String P_HOMEPAGE = 
+      StyleUtils.joinStyles(ApplicantStyles.CIVIFORM_LOGO, Styles.BG_GRAY_100, Styles.MT_1);
+
   public static final String PHOTO = StyleUtils.joinStyles(Styles.M_AUTO, Styles.OPACITY_80);
 
   public static final String P_IMG_FOOTER =

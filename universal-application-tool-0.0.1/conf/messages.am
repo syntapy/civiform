@@ -89,10 +89,7 @@ error.not_found_title=እናዝናለን ገጹ ጠፍ
 error.not_found_title_end=ቶብናል
 error.not_found_description_a=አይጨነቁ ፣ ግን ጥቅሞቹ 
 error.not_found_description_a_end=አሁንም አሉ።
-error.not_found_description_b_beginning=በ
-error.not_found_description_link=መነሻ ገጹ
-error.not_found_description_b=ላይ
-error.not_found_description_b_end=ያግኙዋቸው
+error.not_found_description_link=መነሻ ገጽ
 
 error.img_caption_a=Photo by
 error.img_caption_b=Michael Dziedzic

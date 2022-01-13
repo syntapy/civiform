@@ -17,7 +17,6 @@ import play.i18n.MessagesApi;
 import play.mvc.Http;
 import play.twirl.api.Content;
 import services.MessageKey;
-import services.MessageLang;
 import views.BaseHtmlView;
 import views.HtmlBundle;
 import views.LanguageSelector;
@@ -96,25 +95,22 @@ public class NotFound extends BaseHtmlView {
             .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT);
 
     return div(
-            p(da, db, dc, dd).withClasses(ErrorStyles.P_MOBILE_INLINE),
-            p(de_a, df, spanNowrap(dg, dh, di, dj)).withClasses(ErrorStyles.P_MOBILE_INLINE))
+            p(
+                    span(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_A.getKeyName())),
+                    space(),
+                    spanNowrap(
+                        messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_A_END.getKeyName())),
+                    space())
+                .withClasses(ErrorStyles.P_MOBILE_INLINE),
+            p(
+                spanNowrap(
+                    a(messages.at(MessageKey.ERROR_NOT_FOUND_DESCRIPTION_LINK.getKeyName()))
+                        .withHref("/")
+                        .withClasses(BaseStyles.LINK_TEXT, BaseStyles.LINK_HOVER_TEXT)
+                    ))
+                .withClasses(ErrorStyles.P_HOMEPAGE, ErrorStyles.P_MOBILE_INLINE))
         .withClasses(ErrorStyles.P_DESCRIPTION);
   }
-
-  /*private ContainerTag descriptionContent(Messages messages) {
-    String messages_lang = messages.lang().code();
-    String am_lang = MessageLang.AM.getLang();
-    String zh_TW_lang = MessageLang.ZH_TW.getLang();
-
-    boolean is_am = messages_lang.equals(am_lang);
-    boolean is_zh_TW = messages_lang.equals(zh_TW_lang);
-
-    if (is_am || is_zh_TW) {
-      return descriptionContentAmh(messages);
-    }
-
-    return descriptionContentMain(messages);
-  }*/
 
   private ContainerTag picture(Messages messages) {
     String img_author_url = "https://unsplash.com/@lazycreekimages";

@@ -52,9 +52,7 @@ error.not_found_title=We''re sorry, we lost
 error.not_found_title_end=the page
 error.not_found_description_a=Don''t worry though, the benefits
 error.not_found_description_a_end=are still there.
-error.not_found_description_b=Find them on
-error.not_found_description_b_end=the
-error.not_found_description_link=homepage
+error.not_found_description_link=Homepage
 
 error.img_caption_a=Photo by
 error.img_caption_b=Michael Dziedzic
