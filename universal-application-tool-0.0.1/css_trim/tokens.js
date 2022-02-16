@@ -1,3 +1,4 @@
+"use strict";
 const chevrotain = require('chevrotain');
 const xregexp = require("xregexp");
 
@@ -95,17 +96,7 @@ const SemiColon = createToken({
   label: "';'"
 });
 
-//const LineComment = createToken({
-//  name: "LineComment",
-//  pattern: /\/\/[^\n\r]*/
-//});
-
-//const StringLiteral = createToken({
-//  name: "StringLiteral",
-//  pattern: MAKE_PATTERN('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'),
-//  label: "'StringLiteral'"
-//});
-
+// For lexing the Styles.java file
 const stylesDotJavaTokens = [
   WhiteSpace,
   Public,
@@ -119,6 +110,7 @@ const stylesDotJavaTokens = [
   SemiColonWithFollowEmptyLine
 ]
 
+// For lexing any java file with a call to Styles.XYZ
 const baseStyleCallTokens = [
   WhiteSpace,
   StyleClass,
