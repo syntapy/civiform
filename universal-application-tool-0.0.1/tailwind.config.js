@@ -55,13 +55,6 @@ class StylesJavaReader {
   }
 }
 
-class StylesPrefixReader {
-  constructor(file_contents, stylesDict) {
-    this.file_contents = file_contents;
-    this.stylesDict = stylesDict;
-  }
-}
-
 function getStyles() {
   const matches = {};
   let folder = './app/views/style/'
@@ -82,6 +75,13 @@ function getStyles() {
 }
 
 const styleDict = getStyles();
+
+class StylesPrefixReader {
+  constructor(file_contents, stylesDict) {
+    this.file_contents = file_contents;
+    this.stylesDict = stylesDict;
+  }
+}
 
 function original(content, output) {
   for (const match of content.matchAll(/"([\w-/:]+)"/g)) {
