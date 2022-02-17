@@ -15,7 +15,8 @@
     "autoprefixer": "^10.2.6",
     "postcss": "^8.3.5",
     "tailwindcss": "^2.2.0",
-    "java-parser": "^2.0.1"
+    "chevrotain": "^10.1.1",
+    "xregexp": "^5.1.0"
   },
   "dependencies": {
     "npm": "^8.5.0"

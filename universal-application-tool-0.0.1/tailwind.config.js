@@ -1,4 +1,6 @@
 const fs = require('fs');
+const lexer = require('./css_trim/lexer');
+//const parser = require('./css_trim/parser');
 const PREFIXES = {
   'even':'even',
   'focus':'focus',
@@ -60,12 +62,18 @@ function getStyles() {
   let folder = './app/views/style/'
   try {
     let specialFiles = ['Styles.java', 'BaseStyles.java', 'ReferenceClasses.java'];
+    let i=0;
     for (file of specialFiles) {
-      let data = fs.readFileSync(folder+file, 'utf8').split('\n');
-      let stylesReader = new StylesJavaReader(data);
+      let data = fs.readFileSync(folder+file, 'utf8');
+      if (i === 1) {
+      let tokens = lexer.tokenize(data);
+      let n = tokens.tokens.length;
+      console.log(tokens.tokens)
+      }
+      let stylesReader = new StylesJavaReader(data.split('\n'));
       stylesReader.getMatches(matches);
+      i++;
     }
-
   }
   catch (error) {
     throw 'error reading Styles.java for tailwindcss processing: ' + error.message;
@@ -158,7 +166,7 @@ module.exports = {
               matches = line.matchAll(/["'][\.a-z0-9/:-]+["']/g);
               for (m of matches) {
                 let mr = m[0].replace(/['"]+/g, '');
-                console.log(mr);
+                //console.log(mr);
                 output.push(mr);
               }
             }

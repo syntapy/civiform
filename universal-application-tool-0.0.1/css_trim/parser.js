@@ -1,11 +1,21 @@
 "use strict";
 const chevrotain = require("chevrotain");
-const { stylesDotJavaTokens, baseStyleCallTokens } = require("./tokens");
+const stylesDotJavaLexer = require('./lexer');
+const stylesDotJavaTokens= require("./tokens");
 
-const Parser = chevrotain.Parser;
+class StylesDotJavaParser extends chevrotain.CstParser {
+  constructor() {
+    super(stylesDotJavaLexer);
 
-class JavaStylesParser extends chevrotain.Parser {
-  constructor(input) {
-    super(input, allTokens, { outputCst: true });
+    const $ = this
   }
 }
+
+//const parser = new StylesDotJavaParser();
+
+//function parseInput(inputText) {
+//  const lexResult = stylesDotJavaLexer.tokenize(inputText);
+//  parser.input = lexResult.tokens;
+//}
+
+//module.exports = StylesDotJavaParser;
