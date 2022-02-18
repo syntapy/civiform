@@ -11,6 +11,7 @@ function MAKE_PATTERN(def, flags) {
 
 const Identifier = createToken({
   name: "Identifier",
+  group: chevrotain.Lexer.SKIPPED,
   pattern: /[a-zA-Z_\\$][a-zA-Z_\\$0-9]*/
 });
 
@@ -158,11 +159,14 @@ const RBracket = createToken({
 
 const LineComment = createToken({
   name: "LineComment",
-  pattern: /\/\/+.*/,
-  //pattern: /\/\/[^\n\r]*((\n|[\r][^\n]|\r\n)s*){2,}/,
+  pattern: /\/\/[^\n\r]*/,
   group: chevrotain.Lexer.SKIPPED,
-  line_breaks: false,
-  label: "'//'"
+});
+
+const MultilineComment = createToken({
+  name: "MultilineComment",
+  pattern: /\/\*([^*]|\*(?!\/))*\*\//,
+  group: chevrotain.Lexer.SKIPPED,
 });
 
 const SemiColon = createToken({
@@ -193,7 +197,7 @@ const Select = createToken({
 const Other = createToken({
   name: "Other",
   pattern: /.+/,
-  //group: chevrotain.Lexer.SKIPPED,
+  group: chevrotain.Lexer.SKIPPED,
   line_breaks: false
 });
 
@@ -220,49 +224,36 @@ const ExitComment = createToken({
 });
 
 // For lexing the Styles.java file
-const stylesDotJavaTokens = {
-  modes: {
-    normal_mode: [
-      WhiteSpace,
-      LineBreak,
-      LineComment,
-      LCurly,
-      RCurly,
-      LPar,
-      RPar,
-      LBracket,
-      RBracket,
-      At,
-      Public,
-      Static,
-      Final,
-      Dot,
-      Comma,
-      StringType,
-      Equals,
-      StyleClass,
-      StyleIdentifier,
-      StyleLiteral,
-      Identifier,
-      SemiColon,
-      EnterComment,
-      Other
-    ],
-    comment_mode: [
-      ExitComment,
-    ]
-  },
+// Also used for BaseStyles.java
+const stylesDotJavaTokens = [
+  WhiteSpace,
+  LineBreak,
+  LineComment,
+  Public,
+  Static,
+  Final,
+  StringType,
+  StyleIdentifier,
+  Equals,
+  StyleLiteral,
+  SemiColon,
+  Identifier,
+  MultilineComment
+]
 
-  defaultMode: "normal_mode"
-}
+const stylesDotJavaTokensDictionary = {};
+stylesDotJavaTokens.forEach((item) => {
+  stylesDotJavaTokensDictionary[item.name] = item
+});
 
 // For lexing any java file with a call to Styles.XYZ
 const baseStyleCallTokens = [
   WhiteSpace,
   StyleClass,
   Dot,
-  StyleIdentifier
+  StyleIdentifier,
+  Identifier
 ];
 
 const exampleTokens = require("./sql_example")
-module.exports = { stylesDotJavaTokens, exampleTokens };
+module.exports = { stylesDotJavaTokens, stylesDotJavaTokensDictionary, exampleTokens };
