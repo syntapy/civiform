@@ -172,7 +172,7 @@ const MultilineComment = createToken({
 const SemiColon = createToken({
   name: "SemiColon",
   pattern: /;/,
-  //group: chevrotain.Lexer.SKIPPED,
+  group: chevrotain.Lexer.SKIPPED,
   label: "';'"
 });
 
@@ -204,7 +204,7 @@ const Other = createToken({
 const OtherSkip = createToken({
   name: "Other",
   pattern: /[a-zA-Z0-9_/\\()\[\]]+/,
-  //group: chevrotain.Lexer.SKIPPED,
+  group: chevrotain.Lexer.SKIPPED,
   line_breaks: true
 });
 
@@ -238,6 +238,7 @@ const stylesDotJavaTokens = [
   StyleLiteral,
   SemiColon,
   Identifier,
+  Other,
   MultilineComment
 ]
 
