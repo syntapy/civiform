@@ -1,6 +1,8 @@
 const fs = require('fs');
+const parser = require('java-parser');
+require('./css_trim/index')
 //const lexer = require('./css_trim/lexer');
-const parser = require('./css_trim/parser');
+//const parser = require('./css_trim/parser');
 const PREFIXES = {
   'even':'even',
   'focus':'focus',
@@ -66,6 +68,9 @@ function getStyles() {
     for (file of specialFiles) {
       let data = fs.readFileSync(folder+file, 'utf8');
       if (i === 0) {
+        //console.log(data)
+        //const cst = parser.parse(data)
+        //console.log(cst)
         //let tokens = lexer.tokenize(data);
         //let n = tokens.tokens.length;
         //let tokenStrings = ''
