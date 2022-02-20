@@ -1,8 +1,5 @@
 const fs = require('fs');
-const parser = require('java-parser');
-require('./css_trim/index')
-//const lexer = require('./css_trim/lexer');
-//const parser = require('./css_trim/parser');
+const csstrim = require('./css-trim')
 const PREFIXES = {
   'even':'even',
   'focus':'focus',
@@ -60,36 +57,20 @@ class StylesJavaReader {
 }
 
 function getStyles() {
-  const matches = {};
-  let folder = './app/views/style/'
+  const folder = './app/views/style/'
+  const specialFiles = ['Styles.java', 'BaseStyles.java', 'ReferenceClasses.java'];
   try {
-    let specialFiles = ['Styles.java', 'BaseStyles.java', 'ReferenceClasses.java'];
-    let i=0;
     for (file of specialFiles) {
-      let data = fs.readFileSync(folder+file, 'utf8');
-      if (i === 0) {
-        //console.log(data)
-        //const cst = parser.parse(data)
-        //console.log(cst)
-        //let tokens = lexer.tokenize(data);
-        //let n = tokens.tokens.length;
-        //let tokenStrings = ''
-        //tokens.tokens.forEach((item) => {
-        //  console.log(item)
-        //})
-        //console.log(tokenStrings)
-        //console.log(tokens.tokens)
-      }
-      let stylesReader = new StylesJavaReader(data.split('\n'));
-      stylesReader.getMatches(matches);
-      i++;
+      let code = fs.readFileSync(folder+file, 'utf8');
+      csstrim.parseForStyles(code)
+      //let stylesReader = new StylesJavaReader(code.split('\n'));
+      //stylesReader.getMatches(matches);
     }
-  }
-  catch (error) {
+  } catch (error) {
     throw 'error reading Styles.java for tailwindcss processing: ' + error.message;
   }
-
-  return matches;
+  
+  return csstrim.getStyles()
 }
 
 const styleDict = getStyles();
