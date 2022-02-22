@@ -1,5 +1,6 @@
 const fs = require('fs');
-const csstrim = require('./css-trim')
+const baseStyles = require('./css_trim/base_styles')
+const callsFinder = require('./css_trim/calls_finder')
 const PREFIXES = {
   'even':'even',
   'focus':'focus',
@@ -62,7 +63,7 @@ function getStyles() {
   try {
     for (file of specialFiles) {
       let code = fs.readFileSync(folder+file, 'utf8');
-      csstrim.parseForStyles(code)
+      baseStyles.parseForStyles(code)
       //let stylesReader = new StylesJavaReader(code.split('\n'));
       //stylesReader.getMatches(matches);
     }
@@ -70,7 +71,7 @@ function getStyles() {
     throw 'error reading Styles.java for tailwindcss processing: ' + error.message;
   }
   
-  return csstrim.getStyles()
+  return baseStyles.getStyles()
 }
 
 const styleDict = getStyles();
@@ -104,6 +105,7 @@ function original(content, output) {
   }
 }
 
+var count = 0
 module.exports = {
   purge: {
     enabled: true,
@@ -120,8 +122,30 @@ module.exports = {
         var output = [];
 
         let matchIter = content.match(/(?<=Styles\.)([0-9A-Z_]+)/g);
+        callsFinder.parseForCalls(content)
+        let tmpOutput = callsFinder.getCalls()
 
-        if (matchIter) {
+        for (const styleCall of tmpOutput) {
+          let tailwindClassId = styleDict[styleCall]
+          output.push(tailwindClassId)
+          for (const prefix of [
+                    'even',
+                    'focus',
+                    'focus-within',
+                    'hover',
+                    'disabled',
+                    'sm',
+                    'md',
+                    'lg',
+                    'xl',
+                    '2xl',
+                  ]) {
+            output.push(prefix + ':' + tailwindClassId)
+          }
+        }
+
+        // Legacy code
+        if (false && matchIter) {
           for (const tailwindClassId of matchIter) {
             let tailwindClass = styleDict[tailwindClassId];
             

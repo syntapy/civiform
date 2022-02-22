@@ -17,17 +17,27 @@ public final class Styles {
 }
 `;
 
-const stylesDictionary = {}
 class StylesVisitor extends parser.BaseJavaCstVisitorWithDefaults {
   constructor() {
     super()
+
+    // Just make sure we're not overwriting anything from super class
     if (_.has(this, 'stylesDictionary')) {
       throw "StylesVisitor already has property 'stylesDictionary'. Use a different property name to hold dictionary of styles."
     }
+    if (_.has(this, 'fieldRegex')) {
+      throw "StylesVisitor already has property 'fieldRegex'. Use a different property name to hold dictionary of styles."
+    }
+
+    this.fieldRegex = /[0-9A-Z_]+/
     this.stylesDictionary = {}
     this.validateVisitor()
   }
 
+  // Method name 'fieldDeclaration' matches grammar rule pattern 
+  // in java-parser/src/production/classes.js
+  //
+  // Hence during CST visiting it runs on every instance of that rule found during parsing
   fieldDeclaration(ctx) {
     let tmpNode = ctx.variableDeclaratorList[0].children
     let node = tmpNode.variableDeclarator[0].children
@@ -38,7 +48,7 @@ class StylesVisitor extends parser.BaseJavaCstVisitorWithDefaults {
     let fieldName = undefined
     let styleValue = undefined
 
-    // Don't try to assign 
+    // Try block to not try assigning values from non-matching grammars
     try {
       styleValueTraverserNode = node.variableInitializer[0].children.expression[0].children
       styleValueTraverserNode = styleValueTraverserNode.ternaryExpression[0].children
@@ -53,9 +63,11 @@ class StylesVisitor extends parser.BaseJavaCstVisitorWithDefaults {
       fieldName = fieldNameTraverserNode.Identifier[0].image
       styleValue = styleValueTraverserNode.StringLiteral[0].image
 
-      console.log(fieldName, ' = ', styleValue)
+      //console.log(fieldName, ' = ', styleValue)
 
-      styleValue = styleValue.replace(/['"]+/g, '')
+      if (this.fieldRegex.test(fieldName) === true) {
+        styleValue = styleValue.replace(/['"]+/g, '')
+      }
     } catch (error) {}
 
     if (fieldName && styleValue) {
