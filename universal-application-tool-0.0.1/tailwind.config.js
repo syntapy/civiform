@@ -1,6 +1,7 @@
 const fs = require('fs');
 const baseStyles = require('./css_trim/base_styles')
 const callsFinder = require('./css_trim/calls_finder')
+const tagFinder = require('./css_trim/tag_finder')
 const PREFIXES = {
   'even':'even',
   'focus':'focus',
@@ -121,7 +122,7 @@ module.exports = {
       java: (content) => {
         var output = [];
 
-        let matchIter = content.match(/(?<=Styles\.)([0-9A-Z_]+)/g);
+        //let matchIter = content.match(/(?<=Styles\.)([0-9A-Z_]+)/g);
         callsFinder.parseForCalls(content)
         let tmpOutput = callsFinder.getCalls()
 
@@ -142,6 +143,12 @@ module.exports = {
                   ]) {
             output.push(prefix + ':' + tailwindClassId)
           }
+        }
+
+        tagFinder.parseForTags(content)
+        let tagList = tagFinder.getTags()
+        for (const tag of tagList) {
+          output.push(tag)
         }
 
         // Legacy code
@@ -188,9 +195,11 @@ module.exports = {
           }
 
           // Had to manually push all the html tags for some reason
-          const htmlTags = fs.readFileSync('./tags.txt', 'utf8').split('\n');
-          for (const t of htmlTags) {
-            output.push(t);
+          if (false) {
+            const htmlTags = fs.readFileSync('./tags.txt', 'utf8').split('\n');
+            for (const t of htmlTags) {
+              output.push(t);
+            }
           }
 
           processedTs = true;

@@ -1,5 +1,4 @@
 const parser = require('java-parser')
-const fs = require('fs')
 var _ = require('lodash')
 
 class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
@@ -8,10 +7,10 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 
     // Just make sure we're not overwriting anything from super class
     if (_.has(this, 'styleCallList')) {
-      throw "StylesVisitor already has property 'styleCallList'. Use a different property name to hold dictionary of styles."
+      throw "CallsFinder already has property 'styleCallList'. Use a different property name to hold dictionary of styles."
     }
     if (_.has(this, 'styleRegex')) {
-      throw "StylesVisitor already has property 'styleRegex'. Use a different property name to hold dictionary of styles."
+      throw "CallsFinder already has property 'styleRegex'. Use a different property name to hold dictionary of styles."
     }
 
     this.callRegex = /[0-9A-Z_]+/
@@ -19,6 +18,10 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this.validateVisitor()
   }
 
+  // Method name 'fqnOrRefType' matches grammar rule pattern 
+  // in java-parser/src/production/expression.js
+  //
+  // Hence during CST visiting it runs on every instance of that rule found during parsing
   fqnOrRefType(ctx) {
     let styleCall = ""
 
