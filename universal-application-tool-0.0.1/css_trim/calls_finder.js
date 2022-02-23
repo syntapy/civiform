@@ -1,4 +1,5 @@
 const parser = require('java-parser')
+const traverse = require('./traverse')
 var _ = require('lodash')
 
 const PREFIXES = {
@@ -19,28 +20,17 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     super()
 
     // Just make sure we're not overwriting anything from super class
-    if (_.has(this, 'styleCallList')) {
-      throw "CallsFinder already has property 'styleCallList'. Use a different property name to hold dictionary of styles."
-    }
-    if (_.has(this, 'styleRegex')) {
-      throw "CallsFinder already has property 'styleRegex'. Use a different property name to hold dictionary of styles."
-    }
-    if (_.has(this, 'tagList')) {
-      throw "CallsFinder already has property 'tagList'. Use a different property name to hold dictionary of styles."
-    }
-    if (_.has(this, 'styleRegex')) {
-      throw "CallsFinder already has property 'tagRegex'. Use a different property name to hold dictionary of styles."
-    }
-    if (_.has(this, '_findCalls')) {
-      throw "CallsFinder already has property '_findCalls'. Use a different property name to hold dictionary of styles."
-    }
-    if (_.has(this, '_findTags')) {
-      throw "CallsFinder already has property '_findTags'. Use a different property name to hold dictionary of styles."
-    }
+    if (_.has(this, 'prefixList')) { throw "CallsFinder already has property 'prefixList'. Use a different property name to hold dictionary of prefix calls." }
+    if (_.has(this, 'styleList')) { throw "CallsFinder already has property 'styleList'. Use a different property name to hold dictionary of styles." }
+    if (_.has(this, 'styleRegex')) { throw "CallsFinder already has property 'styleRegex'. Use a different property name to hold dictionary of styles." }
+    if (_.has(this, 'tagList')) { throw "CallsFinder already has property 'tagList'. Use a different property name to hold dictionary of styles." }
+    if (_.has(this, 'styleRegex')) { throw "CallsFinder already has property 'tagRegex'. Use a different property name to hold dictionary of styles." }
+    if (_.has(this, '_findCalls')) { throw "CallsFinder already has property '_findCalls'. Use a different property name to hold dictionary of styles." }
+    if (_.has(this, '_findTags')) { throw "CallsFinder already has property '_findTags'. Use a different property name to hold dictionary of styles." }
 
     this.callRegex = /[0-9A-Z_]+/
-    this.styleCallList = []
     this.tagRegex = /[0-6a-z:]+/
+    this.styleList = []
     this.tagList = []
     this.validateVisitor()
   }
@@ -53,21 +43,10 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     try {
       let identifiers = ctx.Identifier
 
-      if (identifiers.length !== 3) {
-        throw "Wrong identifier length. The j2html import we want here has length 3"
-      }
-
-      if (identifiers[0].image !== "j2html") {
-        throw "Not a j2thml import"
-      }
-
-      if (identifiers[1].image !== "TagCreator") {
-        throw "Not the right j2hml tag"
-      }
-
-      if (identifiers[2].image === "each" || identifiers[2].image === "text") {
-        throw "Not an html tag"
-      }
+      if (identifiers.length !== 3) { throw "Wrong identifier length. The j2html import we want here has length 3" }
+      if (identifiers[0].image !== "j2html") { throw "Not a j2thml import" }
+      if (identifiers[1].image !== "TagCreator") { throw "Not the right j2hml tag" }
+      if (identifiers[2].image === "each" || identifiers[2].image === "text") { throw "Not an html tag" }
 
       tag = identifiers[2].image
 
@@ -82,33 +61,17 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     }
   }
 
+  /* Find calls to Styles.XYZ or BaseStyles.XYZ
+   * ctx: Node in the concrete syntax tree
+   */
   _findCalls(ctx) {
     let styleCall = ""
 
     // Errors here will fail silently, thus preventing an invalid style call
     // from being pushed to tailwind
     try {
-      // Make sure elements are in correct order
-      let keys = Object.keys(ctx)
-
-      if (keys.length !== 3) {
-        throw "incorect expression length"
-      }
-
-      if (keys[0] !== "fqnOrRefTypePartFirst") {
-        throw "expression does not start correctly"
-      }
-
-      if (keys[1] !== "Dot") {
-        throw "no dot in expression 2nd place"
-      }
-
-      if (keys[2] !== "fqnOrRefTypePartRest") {
-        throw "expression does not end correctly"
-      }
-
-      let styleClass = ctx.fqnOrRefTypePartFirst[0]
-      if (styleClass.image !== "Styles" && styleClass.image !== "BaseStyles" && styleClass.image) {
+      let styleClass = traverse.getMethodCallClass(ctx)
+      if (styleClass.image !== "Styles" && styleClass.image !== "BaseStyles") {
         throw "not a valid style call"
       }
 
@@ -117,19 +80,20 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
         throw "not a valid dot token"
       }
 
-      let tmpNode = ctx.fqnOrRefTypePartRest[0].children.fqnOrRefTypePartCommon[0]
-      styleCall = tmpNode.children.Identifier[0].image
+      styleCall = traverse.getMethodCall(ctx)
     } catch(error) {}
 
     if (typeof(styleCall) === 'string') {
       if (styleCall.length > 0) {
         if (this.callRegex.test(styleCall) === true) {
-          this.styleCallList.push(styleCall)
+          this.styleList.push(styleCall)
         }
       }
     }
   }
-
+  /* Find html tags
+   * ctx: node in the concrete syntax tree
+   */
   _findTags(ctx) {
     let tag = ""
 
@@ -202,21 +166,24 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._findCalls(ctx)
     this._findTags(ctx)
   }
-
 }
 
 const visitor = new CallsFinder()
+const printer = require('./traverse')
 
 // To read Styles.java and BaseStyles.java
-function parseForCalls(code) {
+function parse(code) {
   const cst = parser.parse(code);
-  visitor.styleCallList = []
+  visitor.styleList = []
   visitor.tagList = []
+  visitor.prefixList = []
+  //traverse(cst)
+
   visitor.visit(cst)
 }
 
 function getCalls() {
-  return visitor.styleCallList
+  return visitor.styleList
 }
 
 function getTags() {
@@ -227,15 +194,14 @@ function getTags() {
 // or manually traversing small syntax tree to discover
 // names of grammar rules
 const javaCodeStyleCall = `
-
 public class LoginForm extends BaseHtmlView {
 
-  private ContainerTag mainContent(Messages messages) {
-    return div().withClasses(BaseStyles.LOGIN_PAGE);
+  public ContainerTag mobilePage(Messages messages) {
+    return div().withClasses(StyleUtils.responsiveSmall(Styles.TEXT_XL, Styles.W_2_3));
   }
 
-  private ContainerTag newContent(Messages messages) {
-    return div().withClasses(StyleUtils.responsive
+  public ContainerTag mainContent(Messages messages) {
+    return TagCreatorbody().withClasses(BaseStyles.LOGIN_PAGE);
   }
 }
 `
@@ -259,8 +225,8 @@ public abstract class BaseHtmlView {
   }
 }
 `
-//parseForCalls(javaCodeStyleCall)
-//parseForCalls(javaCodeTagFind)
-//console.log(visitor.styleCallList)
+//parse(javaCodeStyleCall)
+//parse(javaCodeTagFind)
+//console.log(visitor.styleList)
 
-module.exports = { parseForCalls, getCalls, getTags }
+module.exports = { parse, getCalls, getTags }

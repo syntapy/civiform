@@ -94,7 +94,6 @@ function original(content, output) {
   }
 }
 
-var count = 0
 module.exports = {
   purge: {
     enabled: true,
@@ -111,11 +110,17 @@ module.exports = {
         var output = [];
 
         //let matchIter = content.match(/(?<=Styles\.)([0-9A-Z_]+)/g);
-        callsFinder.parseForCalls(content)
+        callsFinder.parse(content)
         let tmpOutput = callsFinder.getCalls()
 
+        let count = 0
         for (const styleCall of tmpOutput) {
           let tailwindClassId = styleDict[styleCall]
+          if (count %100 === 0) {
+            console.log(tailwindClassId)
+          }
+
+          count++
           output.push(tailwindClassId)
           for (const prefix of [
                     'even',
@@ -133,7 +138,6 @@ module.exports = {
           }
         }
 
-        //tagFinder.parseForTags(content)
         let tagList = callsFinder.getTags()
         for (const tag of tagList) {
           output.push(tag)
