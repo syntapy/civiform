@@ -70,7 +70,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     // Errors here will fail silently, thus preventing an invalid style call
     // from being pushed to tailwind
     try {
-      let styleClass = traverse.getMethodCallClass(ctx)
+      let styleClass = traverse.getMethodCallClass(ctx, 0, 0, 0)
       if (styleClass.image !== "Styles" && styleClass.image !== "BaseStyles") {
         throw "not a valid style call"
       }
@@ -80,7 +80,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
         throw "not a valid dot token"
       }
 
-      styleCall = traverse.getMethodCall(ctx)
+      styleCall = traverse.getMethodCall(ctx, 0, 0, 0)
     } catch(error) {}
 
     if (typeof(styleCall) === 'string') {
@@ -91,6 +91,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       }
     }
   }
+
   /* Find html tags
    * ctx: node in the concrete syntax tree
    */
@@ -98,47 +99,14 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     let tag = ""
 
     try {
-      let libCallNodeMaybe = ctx.fqnOrRefTypePartFirst[0]
-      libCallNodeMaybe = libCallNodeMaybe.children.fqnOrRefTypePartCommon
-      libCallNodeMaybe = libCallNodeMaybe[0].children.Identifier
+      let libCallNodeMaybe = traverse.getMethodCallClass(ctx, false)
 
-      let node = ctx.fqnOrRefTypePartRest[0].children
-      let identifier = node.fqnOrRefTypePartCommon[0].children.identifier
-
-      // If its a call starting with j2html.TagCreator.<tag>
-      if (libCallNodeMaybe[0].image === "j2html") {
-        let dot = ctx.Dot
-
-        if (dot.length !== 2) {
-          throw "Incorrect number of Dot tokens"
-        }
-
-        // Double check its called by TagCreator
-        let maybeTagCreator = ctx.fqnOrRefTypePartRest[0]
-        maybeTagCreator = maybeTagCreator.children.fqnOrRefTypePartCommon
-        maybeTagCreator = maybeTagCreator[0].children.Identifier
-        maybeTagCreator = maybeTagCreator[0].image
-
-        if (maybeTagCreator !== "TagCreator") {
-          throw "Function not called from j2html.TagCreator so its not a HTML tag"
-        }
-
-        // Get the tag
-        let maybeTag = ctx.fqnOrRefTypePartRest[1]
-        maybeTag = maybeTag.children.fqnOrRefTypePartCommon
-        maybeTag = maybeTag[0].children.Identifier
-        maybeTag = maybeTag[0].image
-
-        tag = maybeTag
-
-      } // If its a call starting with TagCreator.<tag>
-      else if (libCallNodeMaybe[0].image === "TagCreator") {
+      if (libCallNodeMaybe.image === "TagCreator") {
         let dot = ctx.Dot[0]
 
         // Get the tag
-        let maybeTag = ctx.fqnOrRefTypePartRest[0]
-        maybeTag = maybeTag.children.fqnOrRefTypePartCommon[0]
-        maybeTag = maybeTag.children.Identifier[0].image
+        let maybeTag = traverse.getCalledIdentifier(ctx, 0, 0, 0, false)
+        maybeTag = maybeTag.image
 
         tag = maybeTag
       }
@@ -177,7 +145,6 @@ function parse(code) {
   visitor.styleList = []
   visitor.tagList = []
   visitor.prefixList = []
-  //traverse(cst)
 
   visitor.visit(cst)
 }
@@ -190,10 +157,14 @@ function getTags() {
   return visitor.tagList
 }
 
-// Small code snippets to uncomment for debugging
-// or manually traversing small syntax tree to discover
-// names of grammar rules
-const javaCodeStyleCall = `
+/* Small code snippets for testing
+ * or manually traversing small syntax tree to discover
+ *names of grammar rules
+ */
+const javaTestCode = `
+import static j2html.TagCreator.div;
+import static j2html.TagCreator;
+
 public class LoginForm extends BaseHtmlView {
 
   public ContainerTag mobilePage(Messages messages) {
@@ -201,7 +172,11 @@ public class LoginForm extends BaseHtmlView {
   }
 
   public ContainerTag mainContent(Messages messages) {
-    return TagCreatorbody().withClasses(BaseStyles.LOGIN_PAGE);
+    return TagCreator.body().withClasses(BaseStyles.LOGIN_PAGE);
+  }
+
+  public ContainerTag header(Messages messages) {
+    return TagCreator.h1().withClasses(Styles.BG_BLUE_200, Styles.TEXT_2XL);
   }
 }
 `
@@ -209,24 +184,43 @@ public class LoginForm extends BaseHtmlView {
 // Small code snippets to uncomment for debugging
 // or manually traversing small syntax tree to discover
 // names of grammar rules
-const javaCodeTagFind = `
-import static j2html.TagCreator.br;
-import static j2html.TagCreator.a;
-import static j2html.TagCreator.each;
+function test() {
+  console.log("Testing parser for CSS trimming")
+  parse(javaTestCode)
+  const calls = _.sortBy(getCalls())
+  const tags = _.sortBy(getTags())
 
-public abstract class BaseHtmlView {
+  const knownCalls = _.sortBy(["TEXT_XL", "W_2_3", "LOGIN_PAGE", "BG_BLUE_200", "TEXT_2XL"])
+  const knownTags = _.sortBy(["div", "body", "h1"])
 
-  public static Tag button(String textContents) {
-    return j2html.TagCreator.body().with(renderHeader());
+  let hasError = false
+
+  let msgCalls = ""
+  let msgTags = ""
+
+  if (!_.isEqual(calls, knownCalls)) {
+    msgCalls = "Problem finding style calls in test code snippet: \n"
+    msgCalls += "Style calls found:    " + calls.toString() + "\n"
+    msgCalls += "Style calls expected: " + knownCalls.toString() + "\n"
+    hasError = true
   }
 
-  public static Tag button(String textContents) {
-    return TagCreator.body().with(renderHeader());
+  if (!_.isEqual(tags, knownTags)) {
+    msgTags = "Problem finding HTML tags in test code snippet: \n"
+    msgTags += "HTML tags found:    " + tags.toString() + "\n"
+    msgTags += "HTML tags expected: " + knownTags.toString() + "\n"
+    hasError = true
+  }
+
+  if (hasError) {
+    let msg = msgCalls + "\n" + msgTags
+    throw msg
+  } else {
+    console.log("Parsing tests passed!")
   }
 }
-`
-//parse(javaCodeStyleCall)
-//parse(javaCodeTagFind)
-//console.log(visitor.styleList)
+
+// Automated test
+test()
 
 module.exports = { parse, getCalls, getTags }

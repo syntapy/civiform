@@ -116,9 +116,6 @@ module.exports = {
         let count = 0
         for (const styleCall of tmpOutput) {
           let tailwindClassId = styleDict[styleCall]
-          if (count %100 === 0) {
-            console.log(tailwindClassId)
-          }
 
           count++
           output.push(tailwindClassId)
