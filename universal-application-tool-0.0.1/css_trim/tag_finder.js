@@ -22,7 +22,7 @@ class TagFinder extends parser.BaseJavaCstVisitorWithDefaults {
     let tag = ""
 
     try {
-      let identifiers = ctx.children.Identifier
+      let identifiers = ctx.Identifier
 
       if (identifiers.length !== 3) {
         throw "Wrong identifier length. The j2html import we want here has length 3"
@@ -58,27 +58,52 @@ class TagFinder extends parser.BaseJavaCstVisitorWithDefaults {
 
     try {
       let libCallNodeMaybe = ctx.fqnOrRefTypePartFirst[0]
-      libCallNodeMaybe = libCallNodeMaybe.children.fqnOrRefTypePartCommon[0]
-      libCallNodeMaybe = libCallNodeMaybe.children.Identifier[0]
+      libCallNodeMaybe = libCallNodeMaybe.children.fqnOrRefTypePartCommon
+      libCallNodeMaybe = libCallNodeMaybe[0].children.Identifier
 
-      if (libCallNodeMaybe.image !== "TagCreator") {
-        throw "Not a j2html.TagCreator invocation"
+      let node = ctx.fqnOrRefTypePartRest[0].children
+      let identifier = node.fqnOrRefTypePartCommon[0].children.identifier
+
+      if (libCallNodeMaybe[0].image === "j2html") {
+        let dot = ctx.Dot
+
+        if (dot.length !== 2) {
+          throw "Incorrect number of Dot tokens"
+        }
+
+        // Double check its called by TagCreator
+        let maybeTagCreator = ctx.fqnOrRefTypePartRest[0]
+        maybeTagCreator = maybeTagCreator.children.fqnOrRefTypePartCommon
+        maybeTagCreator = maybeTagCreator[0].children.Identifier
+        maybeTagCreator = maybeTagCreator[0].image
+
+        if (maybeTagCreator !== "TagCreator") {
+          throw "Function not called from j2html.TagCreator so its not a HTML tag"
+        }
+
+        // Get the tag
+        let maybeTag = ctx.fqnOrRefTypePartRest[1]
+        maybeTag = maybeTag.children.fqnOrRefTypePartCommon
+        maybeTag = maybeTag[0].children.Identifier
+        maybeTag = maybeTag[0].image
+
+        tag = maybeTag
+
+      } else if (libCallNodeMaybe[0].image === "TagCreator") {
+        let dot = ctx.Dot[0]
+
+        // Get the tag
+        let maybeTag = ctx.fqnOrRefTypePartRest[0]
+        maybeTag = maybeTag.children.fqnOrRefTypePartCommon[0]
+        maybeTag = maybeTag.children.Identifier[0].image
+
+        tag = maybeTag
       }
-
-      // Just to make extra sure theres a '.' token
-      let dot = ctx.Dot[0]
-
-      let functionCallNodeMaybe = ctx.fqnOrRefTypePartRest[0]
-      functionCallNodeMaybe = functionCallNodeMaybe.children.fqnOrRefTypePartCommon[0]
-      functionCallNodeMaybe = functionCallNodeMaybe.children.Identifier[0]
-
-      tag = functionCallNodeMaybe.image
 
       if (tag === "each" || tag === "text") {
         tag = ""
         throw "Not an html tag"
       }
-
     } catch(error) {}
 
     if (typeof(tag) === 'string') {
@@ -106,12 +131,17 @@ function getTags() {
 
 const javaCode = `
 import static j2html.TagCreator.br;
+import static j2html.TagCreator.a;
 import static j2html.TagCreator.each;
 
 public abstract class BaseHtmlView {
 
   public static Tag button(String textContents) {
-    return TagCreator.button(text(textContents)).withType("button");
+    return j2html.TagCreator.body().with(renderHeader());
+  }
+
+  public static Tag button(String textContents) {
+    return TagCreator.body().with(renderHeader());
   }
 }
 `

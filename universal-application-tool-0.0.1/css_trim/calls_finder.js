@@ -1,6 +1,19 @@
 const parser = require('java-parser')
 var _ = require('lodash')
 
+const PREFIXES = {
+  'even':'even',
+  'focus':'focus',
+  'focusWithin':'focus-within',
+  'hover':'hover',
+  'disabled':'disabled',
+  'resonsiveSmall':'sm',
+  'responsiveMedium':'md',
+  'responsiveLarge':'lg',
+  'responsiveXLarge':'xl',
+  'responsive2XLarge':'2xl'
+};
+
 class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   constructor() {
     super()
@@ -91,6 +104,10 @@ public class LoginForm extends BaseHtmlView {
 
   private ContainerTag mainContent(Messages messages) {
     return div().withClasses(BaseStyles.LOGIN_PAGE);
+  }
+
+  private ContainerTag newContent(Messages messages) {
+    return div().withClasses(StyleUtils.responsive
   }
 }
 `

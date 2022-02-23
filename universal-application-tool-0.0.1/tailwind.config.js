@@ -2,22 +2,11 @@ const fs = require('fs');
 const baseStyles = require('./css_trim/base_styles')
 const callsFinder = require('./css_trim/calls_finder')
 const tagFinder = require('./css_trim/tag_finder')
-const PREFIXES = {
-  'even':'even',
-  'focus':'focus',
-  'focusWithin':'focus-within',
-  'hover':'hover',
-  'disabled':'disabled',
-  'resonsiveSmall':'sm',
-  'responsiveMedium':'md',
-  'responsiveLarge':'lg',
-  'responsiveXLarge':'xl',
-  'responsive2XLarge':'2xl'
-};
 
 // Used in the main tailwind's method of the transform obj to ensure we only
 // read certain files (e.g. typescript) only once, since those have their contents read directly
 let processedTs = false;
+var tagDict = {}
 
 // Used to get a dictionary mapping for all possible base styles (no prefixes) in
 // java files refered to in `function getStyles()`
@@ -149,6 +138,7 @@ module.exports = {
         let tagList = tagFinder.getTags()
         for (const tag of tagList) {
           output.push(tag)
+          tagDict[tag] = true
         }
 
         // Legacy code
@@ -232,4 +222,3 @@ module.exports = {
   },
   plugins: [require('@tailwindcss/line-clamp')],
 }
-
