@@ -1,7 +1,6 @@
 const fs = require('fs');
 const baseStyles = require('./css_trim/base_styles')
 const callsFinder = require('./css_trim/calls_finder')
-const tagFinder = require('./css_trim/tag_finder')
 
 // Used in the main tailwind's method of the transform obj to ensure we only
 // read certain files (e.g. typescript) only once, since those have their contents read directly
@@ -134,8 +133,8 @@ module.exports = {
           }
         }
 
-        tagFinder.parseForTags(content)
-        let tagList = tagFinder.getTags()
+        //tagFinder.parseForTags(content)
+        let tagList = callsFinder.getTags()
         for (const tag of tagList) {
           output.push(tag)
           tagDict[tag] = true
