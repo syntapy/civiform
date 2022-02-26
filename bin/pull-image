@@ -7,19 +7,16 @@ source bin/lib.sh
 PULL_SOURCE=civiform/civiform-dev:latest
 LOCAL_TAG=civiform-dev
 
-DOCKER_PULL=docker pull $PULL_SOURCE
-DOCKER_TAG=docker tag $PULL_SOURCE $LOCAL_TAG
-
 echo "Making sure we're up to date with the latest dev"
-echo "Set environment variable USE_LOCAL_CIVIFORM=1 to skip"
 
 if [[ -z "${USE_LOCAL_CIVIFORM}" ]]; then
-  echo "Set environment variable PULL_PROGRESS=1 to show download progress"
+  echo "Set environment variable USE_LOCAL_CIVIFORM=1 to skip"
   if [[ -z "${PULL_PROGRESS}" ]]; then
-    $DOCKER_PULL > /dev/null
-    $DOCKER_TAG > /dev/null
+    echo "Set environment variable PULL_PROGRESS=1 to show download progress"
+    docker pull $PULL_SOURCE > /dev/null
+    docker tag $PULL_SOURCE $LOCAL_TAG > /dev/null
   else
-    $DOCKER_PULL
-    $DOCKER_TAG
+    docker pull $PULL_SOURCE
+    docker tag $PULL_SOURCE $LOCAL_TAG
   fi
 fi
