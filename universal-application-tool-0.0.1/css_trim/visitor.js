@@ -2,6 +2,27 @@ const parser = require('java-parser')
 const traverse = require('./traverse')
 var _ = require('lodash')
 
+const IMAGE_MAP = {
+  '.': 'DOT',
+  '(': 'L_BRACE',
+  ')': 'R_BRACE'
+}
+
+function sortKey(o) {
+  let rval
+  try {
+    rval = o.location.startOffset 
+  } catch(errorA) {
+    try {
+      rval = o.startOffset
+    } catch(errorB) {
+      console.log(errorB)
+      throw errorB
+    }
+  }
+  return rval
+}
+var displayValsasdfg = false
 // TODO The logic in these visitor methods are looking to be very confusing.
 // And it also seems like it would be easy for the case where a developer uses
 // some more advanced / complex stylistic approaches in their code that would evade
@@ -36,12 +57,33 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indent=0
   }
 
+  _getNodes(ctx, attributesList) {
+    const nodesList = []
+    for (const attribute of attributesList) {
+      if (_.has(ctx, attribute)) {
+        for (const node of ctx[attribute]) {
+          nodesList.push(node)
+        }
+      }
+    }
+
+    let nodesSorted = []
+
+    if (nodesList.length > 0) {
+      nodesSorted = _.sortBy(nodesList, [sortKey])
+    }
+
+    displayValsasdfg = false
+    return nodesSorted
+  }
+
   // Method for visualizing grammar + syntax
   _indentedPrintStart(grammarRule, isEnd=false) {
-    let indentation = ' '.repeat(1)
-    let prefix = '   '
+    let indentation = '   |'.repeat(1)
+    let prefix = '   |'
     if (isEnd) {
-      prefix = '-- '
+      indentation = ' - |'.repeat(1)
+      prefix = '- -  '
     }
     console.log(indentation.repeat(this._indent) + prefix + grammarRule)
     this._indent++
@@ -151,23 +193,10 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       prefix: [],
       suffix: [],
     }
-    if (_.has(ctx, 'primaryPrefix')) {
-      for (const node of ctx.primaryPrefix) {
-        const resultIterable = this.visit(node)
-        for (const result of resultIterable) {
-          if (result === 'Styles') {
-            primaryResult.prefix.push(result)
-          }
-        }
-      }
-    }
+    const nodesSorted = this._getNodes(ctx, ['primaryPrefix', 'primarySuffix'])
 
-    if (_.has(ctx, 'primarySuffix')) {
-      for (const node of ctx.primarySuffix) {
-        const resultIterable = this.visit(node)
-        //for (const result of resultIterable) {
-        //}
-      }
+    for (const node of nodesSorted) {
+      this.visit(node)
     }
 
     this._indentedPrintEnd()
@@ -176,14 +205,11 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 
   primaryPrefix(ctx) {
     this._indentedPrintStart("primaryPrefix")
-    if (_.has(ctx, 'fqnOrRefType')) {
-      for (const node of ctx.fqnOrRefType) {
-        const iterList = []
-        for (const iter of this.visit(node)) {
-          iterList.push(iter)
-        }
-        return iterList
-      }
+
+    const nodesSorted = this._getNodes(ctx, ['fqnOrRefType'])
+
+    for (const node of nodesSorted) {
+      const resultIter = this.visit(node)
     }
 
     this._indentedPrintEnd()
@@ -242,10 +268,18 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 
   methodInvocationSuffix(ctx) {
     this._indentedPrintStart("methodInvocationSuffix")
+    if (_.has(ctx, 'LBrace')) {
+      this._indentedPrintStart('L_BRACE', true)
+      this._indentedPrintEnd()
+    }
     if (_.has(ctx, 'argumentList')) {
       for (const node of ctx.argumentList) {
         this.visit(node)
       }
+    }
+    if (_.has(ctx, 'RBrace')) {
+      this._indentedPrintStart('R_BRACE', true)
+      this._indentedPrintEnd()
     }
     this._indentedPrintEnd()
   }
@@ -260,40 +294,28 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indentedPrintEnd()
   }
 
-  *fqnOrRefType(ctx) {
+  fqnOrRefType(ctx) {
     this._indentedPrintStart("*fqnOrRefType")
     //this._findCalls(ctx)
     //this._findTags(ctx)
-    if (_.has(ctx, 'fqnOrRefTypePartFirst')) {
-      const node = ctx.fqnOrRefTypePartFirst
-      const length = node.length
-
-      // Could loop through it, but since left side of the fork
-      // here is expected to be length 1 only, mmight as well
-      // constrain it here
-      if (length > 1) {
-        throw "Unexpected length of fqnOrRefTypePartFirst list"
-      } else if (length === 1) {
-        yield this.visit(node[0])
-      }
-
-      //for (const node of nodeIter) {
-      //  yield this.visit(node)
-      //}
-    }
+    const nodesSorted = this._getNodes(ctx, ['fqnOrRefTypePartFirst', 'fqnOrRefTypePartRest', 'Dot'])
 
     // Could be a full expression under here
     // Which would be needed to be processed if its arguments
     // to a 'StyleUtils' method call
     //
     // Or such a thing may be higher up the tree
-    if (_.has(ctx, 'fqnOrRefTypePartRest')) {
-      for (const node of ctx.fqnOrRefTypePartRest) {
-        // This may or may not bring anything on each yield pass
-        // depending on whether an 'expression' is ultimately under it
-        yield this.visit(node)
+
+    for (const node of nodesSorted) {
+      if (_.has(node, 'image') && _.has(node, 'startOffset')) {
+        const image = node.image
+        this._indentedPrintStart(IMAGE_MAP[image], true)
+        this._indentedPrintEnd()
+      } else {
+        this.visit(node)
       }
     }
+
     this._indentedPrintEnd()
   }
 
@@ -301,15 +323,15 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indentedPrintStart("fqnOrRefTypePartFirst")
     if (_.has(ctx, 'fqnOrRefTypePartCommon')) {
       const node = ctx.fqnOrRefTypePartCommon
-      const length = node.length
-      if (length > 1) {
-        throw "Unexpected length of fqnOrRefTypePartCommon list"
-      } else if (length === 1) {
-        return this.visit(node[0])
-      }
-      //for (const node of ctx.fqnOrRefTypePartCommon) {
-      //  this.visit(node)
+      //const length = node.length
+      //if (length > 1) {
+      //  throw "Unexpected length of fqnOrRefTypePartCommon list"
+      //} else if (length === 1) {
+      //  return this.visit(node[0])
       //}
+      for (const node of ctx.fqnOrRefTypePartCommon) {
+        this.visit(node)
+      }
     }
 
     this._indentedPrintEnd()
