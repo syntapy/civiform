@@ -78,14 +78,20 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   }
 
   // Method for visualizing grammar + syntax
-  _indentedPrintStart(grammarRule, isEnd=false) {
-    let indentation = '   |'.repeat(1)
-    let prefix = '   |'
-    if (isEnd) {
-      indentation = ' - |'.repeat(1)
-      prefix = '- -  '
+  _indentedPrintStart(grammarRuleOrId, isId=false) {
+    let indentation = '  '.repeat(1)
+    let idPrefix = '  '
+    if (isId) {
+      indentation = '--'.repeat(1)
+      idPrefix = '---'
     }
-    console.log(indentation.repeat(this._indent) + prefix + grammarRule)
+
+    let prefix = indentation.repeat(this._indent) + idPrefix
+
+    if (grammarRuleOrId === '*fqnOrRefType') {
+      prefix = prefix.replace(/ /g, '=')
+    }
+    console.log(prefix + grammarRuleOrId)
     this._indent++
   }
 
