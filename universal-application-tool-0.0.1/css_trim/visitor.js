@@ -26,12 +26,29 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     if (_.has(this, 'styleRegex')) { throw "CallsFinder already has property 'tagRegex'. Use a different property name to hold dictionary of styles." }
     if (_.has(this, '_findCalls')) { throw "CallsFinder already has property '_findCalls'. Use a different property name to hold dictionary of styles." }
     if (_.has(this, '_findTags')) { throw "CallsFinder already has property '_findTags'. Use a different property name to hold dictionary of styles." }
+    if (_.has(this, '_indent')) { throw "CallsFinder already has property '_indent'. Use a different property name to hold indentation info." }
 
     this.callRegex = /[0-9A-Z_]+/
     this.tagRegex = /[0-6a-z:]+/
     this.styleList = []
     this.tagList = []
     this.validateVisitor()
+    this._indent=0
+  }
+
+  // Method for visualizing grammar + syntax
+  _indentedPrintStart(grammarRule, isEnd=false) {
+    let indentation = ' '.repeat(1)
+    let prefix = '   '
+    if (isEnd) {
+      prefix = '-- '
+    }
+    console.log(indentation.repeat(this._indent) + prefix + grammarRule)
+    this._indent++
+  }
+
+  _indentedPrintEnd() {
+    this._indent--
   }
 
   // Find calls to Styles.XYZ or BaseStyles.XYZ
@@ -129,6 +146,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   // Need to chain together the visitor methods so that all nodes are visited
   // See: https://chevrotain.io/docs/guide/concrete_syntax_tree.html#traversing
   primary(ctx) {
+    this._indentedPrintStart("primary")
     const primaryResult = {
       prefix: [],
       suffix: [],
@@ -152,10 +170,12 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       }
     }
 
+    this._indentedPrintEnd()
     return primaryResult
   }
 
   primaryPrefix(ctx) {
+    this._indentedPrintStart("primaryPrefix")
     if (_.has(ctx, 'fqnOrRefType')) {
       for (const node of ctx.fqnOrRefType) {
         const iterList = []
@@ -166,66 +186,82 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       }
     }
 
+    this._indentedPrintEnd()
     return null
   }
 
   unaryExpression(ctx) {
+    this._indentedPrintStart("unaryExpression")
     if (_.has(ctx, 'primary')) {
       for (const node of ctx.primary) {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   binaryExpression(ctx) {
+    this._indentedPrintStart("binaryExpression")
     if (_.has(ctx, 'unaryExpression')) {
       for (const node of ctx.unaryExpression) {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   ternaryExpression(ctx) {
+    this._indentedPrintStart("ternaryExpression")
     if (_.has(ctx, 'binaryExpression')) {
       for (const node of ctx.binaryExpression) {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   expression(ctx) {
+    this._indentedPrintStart("expression")
     if (_.has(ctx, 'ternaryExpression')) {
       for (const node of ctx.ternaryExpression) {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   argumentList(ctx) {
+    this._indentedPrintStart("argumentList")
     if (_.has(ctx, 'expression')) {
       for (const node of ctx.expression) {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   methodInvocationSuffix(ctx) {
+    this._indentedPrintStart("methodInvocationSuffix")
     if (_.has(ctx, 'argumentList')) {
       for (const node of ctx.argumentList) {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   primarySuffix(ctx) {
+    this._indentedPrintStart("primarySuffix")
     if (_.has(ctx, 'methodInvocationSuffix')) {
       for (const node of ctx.methodInvocationSuffix) {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   *fqnOrRefType(ctx) {
+    this._indentedPrintStart("*fqnOrRefType")
     //this._findCalls(ctx)
     //this._findTags(ctx)
     if (_.has(ctx, 'fqnOrRefTypePartFirst')) {
@@ -258,9 +294,11 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
         yield this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   fqnOrRefTypePartFirst(ctx) {
+    this._indentedPrintStart("fqnOrRefTypePartFirst")
     if (_.has(ctx, 'fqnOrRefTypePartCommon')) {
       const node = ctx.fqnOrRefTypePartCommon
       const length = node.length
@@ -274,6 +312,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       //}
     }
 
+    this._indentedPrintEnd()
     return null
   }
 
@@ -288,6 +327,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   //      )
   //    )
   fqnOrRefTypePartRest(ctx) {
+    this._indentedPrintStart("fqnOrRefTypePartRest")
     if (_.has(ctx, 'fqnOrRefTypePartCommon')) {
       const nodeIter = ctx.fqnOrRefTypePartCommon
       const length = nodeIter.length
@@ -295,10 +335,12 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
         this.visit(node)
       }
     }
+    this._indentedPrintEnd()
   }
 
   // Forms similar to the base case in recursive
   fqnOrRefTypePartCommon(ctx) {
+    this._indentedPrintStart("fqnOrRefTypePartCommon")
     if (_.has(ctx, 'Identifier')) {
       const node = ctx.Identifier
       const length = node.length
@@ -306,12 +348,15 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
         throw "Unexpected length of identifier list"
       } else if (length === 1) {
         const image = node[0].image
+        this._indentedPrintStart(image, true)
+        this._indentedPrintEnd()
         return image
       }
       //for (const node of ctx.Identifier) {
       //}
     }
 
+    this._indentedPrintEnd()
     return null
   }
 }
