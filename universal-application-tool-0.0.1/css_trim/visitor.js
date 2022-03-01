@@ -21,7 +21,6 @@ function sortKey(o) {
   }
   return rval
 }
-var displayValsasdfg = false
 // TODO The logic in these visitor methods are looking to be very confusing.
 // And it also seems like it would be easy for the case where a developer uses
 // some more advanced / complex stylistic approaches in their code that would evade
@@ -137,7 +136,6 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       nodesSorted = _.sortBy(nodesList, [sortKey])
     }
 
-    displayValsasdfg = false
     return nodesSorted
   }
 
