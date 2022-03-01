@@ -56,8 +56,26 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indent=0
   }
 
+  _shouldPrint(subNodesSorted) {
+    let count = 0
+    let hasIdentifier = false
+
+    if (this._indent === 0) {
+      return true
+    }
+
+    for (const node of subNodesSorted) {
+      if (this._isIdentifier(node)) {
+        return true
+      }
+      count++
+    }
+
+    return count > 1
+  }
+
   // Method for visualizing grammar + syntax
-  _indentedPrintStart(grammarRuleOrId, isId=false) {
+  _indentedPrintStartWrapped(grammarRuleOrId, isId=false) {
     let indentation = '  '.repeat(1)
     let idPrefix = '  '
     let printStr = grammarRuleOrId
@@ -78,10 +96,18 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indent++
   }
 
-  _indentedPrintIdentifier(node) {
+  _indentedPrintStartRule(grammarRule, subNodesSorted) {
+    let shouldPrint = this._shouldPrint(subNodesSorted)
+    if (shouldPrint) {
+      this._indentedPrintStartWrapped(grammarRule, subNodesSorted)
+    } else {
+      this._indentedPrintStartWrapped('\\')
+    }
+  }
+
+  _indentedPrintStartIdentifier(node) {
     const image = node.image
-    this._indentedPrintStart(image, true)
-    this._indentedPrintEnd()
+    this._indentedPrintStartWrapped(image, true)
   }
 
   _indentedPrintEnd() {
@@ -115,43 +141,20 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     return nodesSorted
   }
 
-  _shouldPrint(subNodesSorted) {
-    let count = 0
-    let hasIdentifier = false
-
-    if (this._indent === 0) {
-      return true
-    }
-
-    for (const node of subNodesSorted) {
-      if (this._isIdentifier(node)) {
-        return true
-      }
-      count++
-    }
-
-    return count > 1
-  }
-
   // Core routine to traverse the concrete syntax tree and 
   // retrieve all leaf node identifiers before current node ctx
   _getIdentifiers(ctx, grammarRule) {
     const subRulesAndMaybeIdentifiersList = Object.keys(ctx)
     const subNodesSorted = this._getNodes(ctx, subRulesAndMaybeIdentifiersList)
-
-    let shouldPrint = this._shouldPrint(subNodesSorted)
-    if (shouldPrint) {
-      this._indentedPrintStart(grammarRule)
-    } else {
-      this._indentedPrintStart('\\')
-    }
+    this._indentedPrintStartRule(grammarRule, subNodesSorted)
 
     const identifiers = []
     let  tmpArray
 
     for (const node of subNodesSorted) {
       if (this._isIdentifier(node)) {
-        this._indentedPrintIdentifier(node)
+        this._indentedPrintStartIdentifier(node)
+        this._indentedPrintEnd()
         identifiers.push(node.image)
       } else {
         tmpArray = this.visit(node)
