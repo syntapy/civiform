@@ -79,33 +79,6 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indent--
   }
 
-  // All directly imported tags (from e.g. import j2html.TagCreator.<tag>) 
-  // will get added to tailwind.css
-  /*packageOrTypeName(ctx) {
-    super.packageOrTypeName(ctx)
-    let tag = ""
-
-    try {
-      let identifiers = ctx.Identifier
-
-      if (identifiers.length !== 3) { throw "Wrong identifier length. The j2html import we want here has length 3" }
-      if (identifiers[0].image !== "j2html") { throw "Not a j2thml import" }
-      if (identifiers[1].image !== "TagCreator") { throw "Not the right j2hml tag" }
-      if (identifiers[2].image === "each" || identifiers[2].image === "text") { throw "Not an html tag" }
-
-      tag = identifiers[2].image
-
-    } catch (error) {}
-
-    if (typeof(tag) === 'string') {
-      if (tag.length > 0) {
-        if (this.tagRegex.test(tag) === true) {
-          this.tagList.push(tag)
-        }
-      }
-    }
-  }*/
-
   _isIdentifier(node) {
     if (_.has(node, 'image') && _.has(node, 'startOffset')) {
       return true
@@ -142,8 +115,13 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   // Core routine to traverse the concrete syntax tree and 
   // retrieve all leaf node identifiers before current node ctx
   _getIdentifiers(ctx, grammarRule) {
-    this._indentedPrintStart(grammarRule)
     const subRulesAndMaybeIdentifiersList = Object.keys(ctx)
+    let length =subRulesAndMaybeIdentifiersList.length 
+    if (length === 1) {
+      this._indentedPrintStart('\\')
+    } else {
+      this._indentedPrintStart(grammarRule)
+    }
     const nodesSorted = this._getNodes(ctx, subRulesAndMaybeIdentifiersList)
     const identifiers = []
     let  tmpArray
@@ -161,6 +139,33 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indentedPrintEnd()
     return identifiers
   }
+
+  // All directly imported tags (from e.g. import j2html.TagCreator.<tag>) 
+  // will get added to tailwind.css
+  /*packageOrTypeName(ctx) {
+    super.packageOrTypeName(ctx)
+    let tag = ""
+
+    try {
+      let identifiers = ctx.Identifier
+
+      if (identifiers.length !== 3) { throw "Wrong identifier length. The j2html import we want here has length 3" }
+      if (identifiers[0].image !== "j2html") { throw "Not a j2thml import" }
+      if (identifiers[1].image !== "TagCreator") { throw "Not the right j2hml tag" }
+      if (identifiers[2].image === "each" || identifiers[2].image === "text") { throw "Not an html tag" }
+
+      tag = identifiers[2].image
+
+    } catch (error) {}
+
+    if (typeof(tag) === 'string') {
+      if (tag.length > 0) {
+        if (this.tagRegex.test(tag) === true) {
+          this.tagList.push(tag)
+        }
+      }
+    }
+  }*/
 
   // This is where most of the decision making in regards whether it encountered
   // e.g. a StyleUtils.uvwXY(..), a Styles.XYZ, or a BaseStyles.UVW
