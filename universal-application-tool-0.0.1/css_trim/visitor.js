@@ -16,7 +16,7 @@ function sortKey(o) {
     try {
       rval = o.startOffset
     } catch(errorB) {
-      console.log(errorB)
+      //console.log(errorB)
       throw errorB
     }
   }
@@ -57,26 +57,6 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indent=0
   }
 
-  _getNodes(ctx, attributesList) {
-    const nodesList = []
-    for (const attribute of attributesList) {
-      if (_.has(ctx, attribute)) {
-        for (const node of ctx[attribute]) {
-          nodesList.push(node)
-        }
-      }
-    }
-
-    let nodesSorted = []
-
-    if (nodesList.length > 0) {
-      nodesSorted = _.sortBy(nodesList, [sortKey])
-    }
-
-    displayValsasdfg = false
-    return nodesSorted
-  }
-
   // Method for visualizing grammar + syntax
   _indentedPrintStart(grammarRuleOrId, isId=false) {
     let indentation = '  '.repeat(1)
@@ -97,69 +77,6 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 
   _indentedPrintEnd() {
     this._indent--
-  }
-
-  // Find calls to Styles.XYZ or BaseStyles.XYZ
-  // ctx: Node in the concrete syntax tree
-  _findCalls(ctx) {
-    let styleCall = ""
-
-    // Errors here will fail silently, thus preventing an invalid style call
-    // from being pushed to tailwind
-    try {
-      let styleClass = traverse.getMethodCallClass(ctx, 0, 0, 0)
-      if (styleClass.image !== "Styles" && styleClass.image !== "BaseStyles") {
-        throw "not a valid style call"
-      }
-
-      let dot = ctx.Dot[0]
-      if (dot.image !== ".") {
-        throw "not a valid dot token"
-      }
-
-      styleCall = traverse.getMethodCall(ctx, 0, 0, 0)
-    } catch(error) {}
-
-    if (typeof(styleCall) === 'string') {
-      if (styleCall.length > 0) {
-        if (this.callRegex.test(styleCall) === true) {
-          this.styleList.push(styleCall)
-        }
-      }
-    }
-  }
-
-  // Find html tags
-  // ctx: node in the concrete syntax tree
-  _findTags(ctx) {
-    let tag = ""
-
-    try {
-      let libCallNodeMaybe = traverse.getMethodCallClass(ctx, false)
-
-      if (libCallNodeMaybe.image === "TagCreator") {
-        let dot = ctx.Dot[0]
-
-        // Get the tag
-        let maybeTag = traverse.getCalledIdentifier(ctx, 0, 0, 0, false)
-        maybeTag = maybeTag.image
-
-        tag = maybeTag
-      }
-
-      if (tag === "each" || tag === "text") {
-        tag = ""
-        throw "Not an html tag"
-      }
-    } catch(error) {}
-
-    if (typeof(tag) === 'string') {
-      if (tag.length > 0) {
-        if (this.tagRegex.test(tag) === true) {
-          this.tagList.push(tag)
-        }
-      }
-    }
   }
 
   // All directly imported tags (from e.g. import j2html.TagCreator.<tag>) 
@@ -189,27 +106,74 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     }
   }*/
 
+  _isIdentifier(node) {
+    if (_.has(node, 'image') && _.has(node, 'startOffset')) {
+      return true
+    }
+    return false
+  }
+
+  _tabbedPrintIdentifier(node) {
+    const image = node.image
+    this._indentedPrintStart(IMAGE_MAP[image], true)
+    this._indentedPrintEnd()
+  }
+
+  _getNodes(ctx, attributesList) {
+    const nodesList = []
+    for (const attribute of attributesList) {
+      if (_.has(ctx, attribute)) {
+        for (const node of ctx[attribute]) {
+          nodesList.push(node)
+        }
+      }
+    }
+
+    let nodesSorted = []
+
+    if (nodesList.length > 0) {
+      nodesSorted = _.sortBy(nodesList, [sortKey])
+    }
+
+    displayValsasdfg = false
+    return nodesSorted
+  }
+
+  // Core routine to traverse the concrete syntax tree and 
+  // retrieve all leaf node identifiers before current node ctx
+  _getIdentifiers(ctx, grammarRule) {
+    this._indentedPrintStart(grammarRule)
+    const subRulesAndMaybeIdentifiersList = Object.keys(ctx)
+    const nodesSorted = this._getNodes(ctx, subRulesAndMaybeIdentifiersList)
+    const identifiers = []
+    let  tmpArray
+
+    for (const node of nodesSorted) {
+      //let tmpArray = this.visit(node)
+      if (this._isIdentifier(node)) {
+        identifiers.push(node.image)
+      } else {
+        tmpArray = this.visit(node)
+        identifiers.concat(tmpArray)
+      }
+    }
+
+    this._indentedPrintEnd()
+    return identifiers
+  }
+
   // This is where most of the decision making in regards whether it encountered
   // e.g. a StyleUtils.uvwXY(..), a Styles.XYZ, or a BaseStyles.UVW
   // Need to chain together the visitor methods so that all nodes are visited
   // See: https://chevrotain.io/docs/guide/concrete_syntax_tree.html#traversing
   primary(ctx) {
-    this._indentedPrintStart("primary")
-    const primaryResult = {
-      prefix: [],
-      suffix: [],
-    }
-    const nodesSorted = this._getNodes(ctx, ['primaryPrefix', 'primarySuffix'])
+    const identifiers = this._getIdentifiers(ctx, "primary", ['primaryPrefix', 'primarySuffix'])
 
-    for (const node of nodesSorted) {
-      this.visit(node)
-    }
-
-    this._indentedPrintEnd()
-    return primaryResult
+    return identifiers
   }
 
   primaryPrefix(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "primaryPrefix", ["fqnOrRefType"])
     this._indentedPrintStart("primaryPrefix")
 
     const nodesSorted = this._getNodes(ctx, ['fqnOrRefType'])
@@ -313,10 +277,8 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     // Or such a thing may be higher up the tree
 
     for (const node of nodesSorted) {
-      if (_.has(node, 'image') && _.has(node, 'startOffset')) {
-        const image = node.image
-        this._indentedPrintStart(IMAGE_MAP[image], true)
-        this._indentedPrintEnd()
+      if (this._isIdentifier(node)) {
+        this._tabbedPrintIdentifier(node)
       } else {
         this.visit(node)
       }
@@ -329,12 +291,6 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indentedPrintStart("fqnOrRefTypePartFirst")
     if (_.has(ctx, 'fqnOrRefTypePartCommon')) {
       const node = ctx.fqnOrRefTypePartCommon
-      //const length = node.length
-      //if (length > 1) {
-      //  throw "Unexpected length of fqnOrRefTypePartCommon list"
-      //} else if (length === 1) {
-      //  return this.visit(node[0])
-      //}
       for (const node of ctx.fqnOrRefTypePartCommon) {
         this.visit(node)
       }
