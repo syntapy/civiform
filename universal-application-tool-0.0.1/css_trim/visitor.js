@@ -16,7 +16,6 @@ function sortKey(o) {
     try {
       rval = o.startOffset
     } catch(errorB) {
-      //console.log(errorB)
       throw errorB
     }
   }
@@ -61,9 +60,13 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   _indentedPrintStart(grammarRuleOrId, isId=false) {
     let indentation = '  '.repeat(1)
     let idPrefix = '  '
+    let printStr = grammarRuleOrId
     if (isId) {
       indentation = '--'.repeat(1)
-      idPrefix = '---'
+      idPrefix = '-- '
+      if (_.has(IMAGE_MAP, printStr)) {
+        printStr = IMAGE_MAP[printStr]
+      }
     }
 
     let prefix = indentation.repeat(this._indent) + idPrefix
@@ -75,6 +78,12 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._indent++
   }
 
+  _indentedPrintIdentifier(node) {
+    const image = node.image
+    this._indentedPrintStart(image, true)
+    this._indentedPrintEnd()
+  }
+
   _indentedPrintEnd() {
     this._indent--
   }
@@ -84,12 +93,6 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       return true
     }
     return false
-  }
-
-  _tabbedPrintIdentifier(node) {
-    const image = node.image
-    this._indentedPrintStart(IMAGE_MAP[image], true)
-    this._indentedPrintEnd()
   }
 
   _getNodes(ctx, attributesList) {
@@ -112,23 +115,43 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     return nodesSorted
   }
 
+  _shouldPrint(subNodesSorted) {
+    let count = 0
+    let hasIdentifier = false
+
+    if (this._indent === 0) {
+      return true
+    }
+
+    for (const node of subNodesSorted) {
+      if (this._isIdentifier(node)) {
+        return true
+      }
+      count++
+    }
+
+    return count > 1
+  }
+
   // Core routine to traverse the concrete syntax tree and 
   // retrieve all leaf node identifiers before current node ctx
   _getIdentifiers(ctx, grammarRule) {
     const subRulesAndMaybeIdentifiersList = Object.keys(ctx)
-    let length =subRulesAndMaybeIdentifiersList.length 
-    if (length === 1) {
-      this._indentedPrintStart('\\')
-    } else {
+    const subNodesSorted = this._getNodes(ctx, subRulesAndMaybeIdentifiersList)
+
+    let shouldPrint = this._shouldPrint(subNodesSorted)
+    if (shouldPrint) {
       this._indentedPrintStart(grammarRule)
+    } else {
+      this._indentedPrintStart('\\')
     }
-    const nodesSorted = this._getNodes(ctx, subRulesAndMaybeIdentifiersList)
+
     const identifiers = []
     let  tmpArray
 
-    for (const node of nodesSorted) {
-      //let tmpArray = this.visit(node)
+    for (const node of subNodesSorted) {
       if (this._isIdentifier(node)) {
+        this._indentedPrintIdentifier(node)
         identifiers.push(node.image)
       } else {
         tmpArray = this.visit(node)
@@ -172,137 +195,58 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   // Need to chain together the visitor methods so that all nodes are visited
   // See: https://chevrotain.io/docs/guide/concrete_syntax_tree.html#traversing
   primary(ctx) {
-    const identifiers = this._getIdentifiers(ctx, "primary", ['primaryPrefix', 'primarySuffix'])
-
+    const identifiers = this._getIdentifiers(ctx, "primary")
     return identifiers
   }
 
   primaryPrefix(ctx) {
-    const identifiers = this._getIdentifiers(ctx, "primaryPrefix", ["fqnOrRefType"])
-    this._indentedPrintStart("primaryPrefix")
-
-    const nodesSorted = this._getNodes(ctx, ['fqnOrRefType'])
-
-    for (const node of nodesSorted) {
-      const resultIter = this.visit(node)
-    }
-
-    this._indentedPrintEnd()
-    return null
+    const identifiers = this._getIdentifiers(ctx, "primaryPrefix")
+    return identifiers
   }
 
   unaryExpression(ctx) {
-    this._indentedPrintStart("unaryExpression")
-    if (_.has(ctx, 'primary')) {
-      for (const node of ctx.primary) {
-        this.visit(node)
-      }
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "unaryExpression")
+    return identifiers
   }
 
   binaryExpression(ctx) {
-    this._indentedPrintStart("binaryExpression")
-    if (_.has(ctx, 'unaryExpression')) {
-      for (const node of ctx.unaryExpression) {
-        this.visit(node)
-      }
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "binaryExpression")
+    return identifiers
   }
 
   ternaryExpression(ctx) {
-    this._indentedPrintStart("ternaryExpression")
-    if (_.has(ctx, 'binaryExpression')) {
-      for (const node of ctx.binaryExpression) {
-        this.visit(node)
-      }
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "ternaryExpression")
+    return identifiers
   }
 
   expression(ctx) {
-    this._indentedPrintStart("expression")
-    if (_.has(ctx, 'ternaryExpression')) {
-      for (const node of ctx.ternaryExpression) {
-        this.visit(node)
-      }
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "expression")
+    return identifiers
   }
 
   argumentList(ctx) {
-    this._indentedPrintStart("argumentList")
-    if (_.has(ctx, 'expression')) {
-      for (const node of ctx.expression) {
-        this.visit(node)
-      }
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "argumentList")
+    return identifiers
   }
 
   methodInvocationSuffix(ctx) {
-    this._indentedPrintStart("methodInvocationSuffix")
-    if (_.has(ctx, 'LBrace')) {
-      this._indentedPrintStart('L_BRACE', true)
-      this._indentedPrintEnd()
-    }
-    if (_.has(ctx, 'argumentList')) {
-      for (const node of ctx.argumentList) {
-        this.visit(node)
-      }
-    }
-    if (_.has(ctx, 'RBrace')) {
-      this._indentedPrintStart('R_BRACE', true)
-      this._indentedPrintEnd()
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "methodInvocationSuffix")
+    return identifiers
   }
 
   primarySuffix(ctx) {
-    this._indentedPrintStart("primarySuffix")
-    if (_.has(ctx, 'methodInvocationSuffix')) {
-      for (const node of ctx.methodInvocationSuffix) {
-        this.visit(node)
-      }
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "primarySuffix")
+    return identifiers
   }
 
   fqnOrRefType(ctx) {
-    this._indentedPrintStart("*fqnOrRefType")
-    //this._findCalls(ctx)
-    //this._findTags(ctx)
-    const nodesSorted = this._getNodes(ctx, ['fqnOrRefTypePartFirst', 'fqnOrRefTypePartRest', 'Dot'])
-
-    // Could be a full expression under here
-    // Which would be needed to be processed if its arguments
-    // to a 'StyleUtils' method call
-    //
-    // Or such a thing may be higher up the tree
-
-    for (const node of nodesSorted) {
-      if (this._isIdentifier(node)) {
-        this._tabbedPrintIdentifier(node)
-      } else {
-        this.visit(node)
-      }
-    }
-
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefType")
+    return identifiers
   }
 
   fqnOrRefTypePartFirst(ctx) {
-    this._indentedPrintStart("fqnOrRefTypePartFirst")
-    if (_.has(ctx, 'fqnOrRefTypePartCommon')) {
-      const node = ctx.fqnOrRefTypePartCommon
-      for (const node of ctx.fqnOrRefTypePartCommon) {
-        this.visit(node)
-      }
-    }
-
-    this._indentedPrintEnd()
-    return null
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefTypePartFirst")
+    return identifiers
   }
 
   // TODO: May need to loop through the sub visits of
@@ -316,37 +260,14 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   //      )
   //    )
   fqnOrRefTypePartRest(ctx) {
-    this._indentedPrintStart("fqnOrRefTypePartRest")
-    if (_.has(ctx, 'fqnOrRefTypePartCommon')) {
-      const nodeIter = ctx.fqnOrRefTypePartCommon
-      const length = nodeIter.length
-      for (const node of ctx.fqnOrRefTypePartCommon) {
-        this.visit(node)
-      }
-    }
-    this._indentedPrintEnd()
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefTypePartRest")
+    return identifiers
   }
 
   // Forms similar to the base case in recursive
   fqnOrRefTypePartCommon(ctx) {
-    this._indentedPrintStart("fqnOrRefTypePartCommon")
-    if (_.has(ctx, 'Identifier')) {
-      const node = ctx.Identifier
-      const length = node.length
-      if (length > 1) {
-        throw "Unexpected length of identifier list"
-      } else if (length === 1) {
-        const image = node[0].image
-        this._indentedPrintStart(image, true)
-        this._indentedPrintEnd()
-        return image
-      }
-      //for (const node of ctx.Identifier) {
-      //}
-    }
-
-    this._indentedPrintEnd()
-    return null
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefTypePartCommon")
+    return identifiers
   }
 }
 
