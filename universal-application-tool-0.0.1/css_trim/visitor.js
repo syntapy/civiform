@@ -42,7 +42,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 
   // Core routine to traverse the concrete syntax tree and 
   // retrieve all leaf node identifiers before current node ctx
-  _getIdentifiers(ctx, grammarRule, maybePrintSubNodes=true) {
+  _getIdentifiers(ctx, grammarRule, printCode=false) {
     const subNodesSorted = this.nodeOrganizer.getNodesSorted(ctx)
     const numChildren = subNodesSorted.length
     this.graphVisualizer.pushGrammarRule(grammarRule, numChildren)
@@ -61,7 +61,10 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       }
     }
 
-    this.graphVisualizer.pop()
+    if (printCode) {
+      this.graphVisualizer.printCode(grammarRule, identifierList)
+    }
+    this.graphVisualizer.pop(grammarRule)
 
     return identifierList
   }

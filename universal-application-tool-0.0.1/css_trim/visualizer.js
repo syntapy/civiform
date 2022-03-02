@@ -7,38 +7,100 @@ const IMAGE_MAP = {
   ')': 'R_BRACE'
 }
 
-class GraphVisualizer {
-  constructor(nodeOrganizer) {
-    this.nodeOrganizer = nodeOrganizer
-    this._level = 0
-
+class DisplayModifier {
+  constructor() {
     // Variables related to how deep of the tree to print
     //
-    // E.g. is _coreExpressionGrammarRule is 'primary'
-    // and if _coreExpressionCutoffLevel is 2, then every 'primary' 
+    // E.g. is _GrammarRule is 'primary'
+    // and if _CutoffLevel is 2, then every 'primary' 
     // node under the highest 'primary' node will print the full
     // code expression under it
-    this._coreExpressionGrammarRule = "primary"
-    this._coreExpressionCutoffLevel = 1
-    this._coreExpressionCurrentLevel = 0
-    this._coreExpressionNodeStack = []
+    this._grammarRule = "primary"
+    this._moddedLevel = 1
+    this._level = 0
+    this.hasPrintedCodeAlready = false
+  }
+
+  maybePush(grammarRule) {
+    if (grammarRule === this._grammarRule) {
+      this._level++
+    }
+  }
+
+  maybePop(grammarRule) {
+    if (grammarRule === this._grammarRule) {
+      this._level--
+      if (this.checkLevel(grammarRule) === true) {
+        this.hasPrintedCodeAlready = false
+      }
+    }
+  }
+  
+  checkLevel(grammarRule) {
+    if (this._level > this._moddedLevel) {
+      return -1
+    } else if (this._level === this._moddedLevel) {
+      return 0
+    } else {
+      return 1
+    }
+  }
+}
+
+class GraphVisualizer {
+  constructor(nodeOrganizer, displayMod) {
+    this.nodeOrganizer = nodeOrganizer
+    this.displayMod = displayMod
+    this._level = 0
+
+    // Set this to true to find out what child nodes the primary
+    // grammar rule has
+    this.printCoreRuleChildrenOnly = true
+  }
+
+  shouldPrintNormally() {
+    return this.displayMod.checkLevel() === 1
   }
 
   pushGrammarRule(grammarRule, numChildren) {
     this._pushIndent()
-    this._printGrammarRule(grammarRule, numChildren)
+    this.displayMod.maybePush(grammarRule)
+    //if (this.checkLevel()) {
+      this._printGrammarRule(grammarRule, numChildren)
+    //} //else {
+      //this._printGrammarRule("===", numChildren)
+    //}
   }
 
   pushIdentifier(identifier) {
     this._pushIndent()
-    this._printIdentifier(identifier)
+    //if (this.checkLevel()) {
+      this._printIdentifier(identifier)
+    //} //else {
+      //this._printIdentifier("$$$")
+    //}
   }
 
-  pop() {
+  pop(grammarRule) {
     this._level--
+    this.displayMod.maybePop(grammarRule)
     if (this._level < 0) {
       throw "Negative indent error!!!"
     }
+  }
+
+  printCode(grammarRule, identifierList) {
+    const code = identifierList.join()
+    this.pushIdentifier(code)
+    this.pop(grammarRule)
+    //this._printIdentifier(code)
+    //if (this.displayMod.checkLevel(grammarRule) === false) {
+    //  if (this.displayMod.hasPrintedCodeAlready === false) {
+    //    const code = identifierList.join()
+    //    this._printIdentifier(code)
+    //    this.displayMod.hasPrintedCodeAlready = true
+    //  }
+    //}
   }
 
   _pushIndent() {
@@ -72,7 +134,24 @@ class GraphVisualizer {
   //
   // numChildren: The number of subnodes for that node in the tree, including Identifiers
   _getGrammarLiteral(grammarRule, numChildren) {
-    if (this._level === 1 || numChildren < 2) {
+    const levelState = this.displayMod.checkLevel(grammarRule)
+    const prefix = this.displayMod._level.toString() + ' ' + levelState.toString()
+
+    const isRoot = this._level === 1
+    const hasOneChild = numChildren < 2
+    const isCoreRule = this.displayMod._grammarRule === grammarRule
+
+    let printGrammar = false
+
+    if (isRoot) {
+      printGrammar = true
+    } else if (isCoreRule) {
+      printGrammar = true
+    } else if (!hasOneChild) {
+      printGrammar = true
+    }
+
+    if (printGrammar) {
       return grammarRule
     } else {
       return '\\'
@@ -100,7 +179,8 @@ class GraphVisualizer {
 
 function getVisualizer() {
   const nodeOrganizer = node_organizer.getOrganizer()
-  return new GraphVisualizer(nodeOrganizer)
+  const displayMod = new DisplayModifier()
+  return new GraphVisualizer(nodeOrganizer, displayMod)
 }
 
 function test() {
