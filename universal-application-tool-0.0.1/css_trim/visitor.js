@@ -61,9 +61,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       }
     }
 
-    if (printCode) {
-      this.graphVisualizer.printCode(grammarRule, identifierList)
-    }
+    //this.graphVisualizer.maybePrintCode(grammarRule, identifierList)
     this.graphVisualizer.pop(grammarRule)
 
     return identifierList

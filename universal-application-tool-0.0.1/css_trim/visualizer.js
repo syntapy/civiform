@@ -52,10 +52,31 @@ class GraphVisualizer {
     this.nodeOrganizer = nodeOrganizer
     this.displayMod = displayMod
     this._level = 0
+    this._printChildrenLevel = []
+    this._printCoreRuleChildrenOnly = true
 
     // Set this to true to find out what child nodes the primary
     // grammar rule has
     this.printCoreRuleChildrenOnly = true
+  }
+
+  _atCoreRuleChildrenLevel() {
+    const length = this._printChildrenLevel.length
+    if (length) {
+      if (this._level === this._printChildrenLevel[length-1]) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  _pushChildrenLevel() {
+    this._printChildrenLevel.push(this._level+1)
+  }
+
+  _popChildrenLevel() {
+    this._printChildrenLevel.pop()
   }
 
   shouldPrintNormally() {
@@ -65,8 +86,11 @@ class GraphVisualizer {
   pushGrammarRule(grammarRule, numChildren) {
     this._pushIndent()
     this.displayMod.maybePush(grammarRule)
+    if (grammarRule === this.displayMod._grammarRule) {
+      this._pushChildrenLevel()
+    }
     //if (this.checkLevel()) {
-      this._printGrammarRule(grammarRule, numChildren)
+    this._printGrammarRule(grammarRule, numChildren)
     //} //else {
       //this._printGrammarRule("===", numChildren)
     //}
@@ -84,6 +108,9 @@ class GraphVisualizer {
   pop(grammarRule) {
     this._level--
     this.displayMod.maybePop(grammarRule)
+    if (grammarRule === this.displayMod._grammarRule) {
+      this._popChildrenLevel()
+    }
     if (this._level < 0) {
       throw "Negative indent error!!!"
     }
@@ -137,7 +164,7 @@ class GraphVisualizer {
     const levelState = this.displayMod.checkLevel(grammarRule)
     const prefix = this.displayMod._level.toString() + ' ' + levelState.toString()
 
-    const isRoot = this._level === 1
+    const isRoot = this._level === 0
     const hasOneChild = numChildren < 2
     const isCoreRule = this.displayMod._grammarRule === grammarRule
 
@@ -147,8 +174,16 @@ class GraphVisualizer {
       printGrammar = true
     } else if (isCoreRule) {
       printGrammar = true
-    } else if (!hasOneChild) {
-      printGrammar = true
+    }
+
+    if (this._printCoreRuleChildrenOnly) {
+      if (this._atCoreRuleChildrenLevel()) {
+        printGrammar = true
+      }
+    } else {
+      if (!hasOneChild) {
+        printGrammar = true
+      }
     }
 
     if (printGrammar) {
