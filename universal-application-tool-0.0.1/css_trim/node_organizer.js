@@ -1,3 +1,19 @@
+const _ = require('lodash')
+
+function sortKey(o) {
+  let rval
+  try {
+    rval = o.location.startOffset 
+  } catch(errorA) {
+    try {
+      rval = o.startOffset
+    } catch(errorB) {
+      throw errorB
+    }
+  }
+  return rval
+}
+
 class NodeOrganizer {
 
   getNodesSorted(ctx) {

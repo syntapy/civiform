@@ -169,10 +169,13 @@ class GraphVisualizer {
   }
 }
 
-function test() {
+function getVisualizer() {
   const nodeOrganizer = node_organizer.getOrganizer()
-  const visualizer = new GraphVisualizer(nodeOrganizer)
+  return new GraphVisualizer(nodeOrganizer)
+}
 
+function test() {
+  const visualizer = getVisualizer()
   visualizer.pushGrammarRule("Level 1", 1)
   visualizer.pushGrammarRule("Level 2a", 1)
   visualizer.pushGrammarRule("Level 3a", 2)
@@ -191,8 +194,8 @@ function test() {
   visualizer.pop()
 }
 
-test()
+//test()
 
-throw "quit visualizer error"
+//throw "quit visualizer error"
 
-module.exports = { test }
+module.exports = { test, getVisualizer }

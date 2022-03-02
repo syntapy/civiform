@@ -1,53 +1,33 @@
 const parser = require('java-parser')
 const traverse = require('./traverse')
+const visualizer = require('./visualizer')
+const node_organizer = require('./node_organizer')
 var _ = require('lodash')
 
-function sortKey(o) {
-  let rval
-  try {
-    rval = o.location.startOffset 
-  } catch(errorA) {
-    try {
-      rval = o.startOffset
-    } catch(errorB) {
-      throw errorB
-    }
-  }
-  return rval
-}
-
-// TODO The logic in these visitor methods are looking to be very confusing.
-// And it also seems like it would be easy for the case where a developer uses
-// some more advanced / complex stylistic approaches in their code that would evade
-// some of the syntactic structures captured in this visitor.
-//
-// So that, combined with the complexity of the code, is kinda making me concerned about
-// the future maintainability of this thing
-//
-// Maybe theres a way to capture the logic in a more readable way?
-// And add tons of comments describing how this works so that someone can
-// easily jump on and make a modification in case a new coding style breaks
-// the style capture
 class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
-  constructor(cstVisualizer) {
+  constructor(graphVisualizer, nodeOrganizer) {
     super()
 
     // Just make sure we're not overwriting anything from super class
-    if (_.has(this, 'prefixList')) { throw "CallsFinder already has property 'prefixList'. Use a different property name to hold dictionary of prefix calls." }
-    if (_.has(this, 'styleList')) { throw "CallsFinder already has property 'styleList'. Use a different property name to hold dictionary of styles." }
-    if (_.has(this, 'styleRegex')) { throw "CallsFinder already has property 'styleRegex'. Use a different property name to hold dictionary of styles." }
-    if (_.has(this, 'tagList')) { throw "CallsFinder already has property 'tagList'. Use a different property name to hold dictionary of styles." }
-    if (_.has(this, 'styleRegex')) { throw "CallsFinder already has property 'tagRegex'. Use a different property name to hold dictionary of styles." }
-    if (_.has(this, '_findCalls')) { throw "CallsFinder already has property '_findCalls'. Use a different property name to hold dictionary of styles." }
-    if (_.has(this, '_findTags')) { throw "CallsFinder already has property '_findTags'. Use a different property name to hold dictionary of styles." }
-    if (_.has(this, '_indent')) { throw "CallsFinder already has property '_indent'. Use a different property name to hold indentation info." }
+    this._assertPropertyAvailable('graphVisualizer')
+    this._assertPropertyAvailable('nodeOrganizer')
+    this._assertPropertyAvailable('callRegex')
+    this._assertPropertyAvailable('tagRegex')
+    this._assertPropertyAvailable('styleList')
+    this._assertPropertyAvailable('tagList')
 
-    this.graphVisualizer = cstVisualizer
+    this.graphVisualizer = graphVisualizer
+    this.nodeOrganizer = nodeOrganizer
     this.callRegex = /[0-9A-Z_]+/
     this.tagRegex = /[0-6a-z:]+/
     this.styleList = []
     this.tagList = []
     this.validateVisitor()
+  }
+
+  _assertPropertyAvailable(property, msgPortion) {
+    const msg = "CallsFinder already has property 'prefixList'. Use a different property name to hold " + msgPortion
+    if (_.has(this, property)) { throw  "property not available" }
   }
 
   _getExpression(identifiersList) {
@@ -63,8 +43,9 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   // Core routine to traverse the concrete syntax tree and 
   // retrieve all leaf node identifiers before current node ctx
   _getIdentifiers(ctx, grammarRule, maybePrintSubNodes=true) {
-    const subRulesAndMaybeIdentifiersList = Object.keys(ctx)
-    const subNodesSorted = this._getNodes(ctx, subRulesAndMaybeIdentifiersList)
+    const subNodesSorted = this.nodeOrganizer.getNodesSorted(ctx)
+    const numChildren = subNodesSorted.length
+    this.graphVisualizer.pushGrammarRule(grammarRule, numChildren)
 
     const identifierList = []
     let  tmpArray
@@ -73,23 +54,16 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       if (this.nodeOrganizer.isIdentifier(node)) {
         this.graphVisualizer.pushIdentifier(node.image)
         identifierList.push(node.image)
+        this.graphVisualizer.pop()
       } else {
-        this.graphVisualizer.pushGrammarRule
         tmpArray = this.visit(node)
         identifierList.concat(tmpArray)
       }
     }
 
+    this.graphVisualizer.pop()
+
     return identifierList
-  }
-
-  _getIdentifiersAndMaybePrint(ctx, grammarRule) {
-    if (this.nodeOrganizer.isIdentifier(ctx)) {
-    
-    }
-    this.graphVisualizer.push
-
-    const identifiers = this._getIdentifiers(ctx, grammarRule)
   }
 
   // All directly imported tags (from e.g. import j2html.TagCreator.<tag>) 
@@ -124,87 +98,78 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   // Need to chain together the visitor methods so that all nodes are visited
   // See: https://chevrotain.io/docs/guide/concrete_syntax_tree.html#traversing
   primary(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "primary")
-    //const printExpression = this._isBelowCoreExpressionCutoffLevelStart("primary")
-    //this._indent++
-    //this._indentedPrintStartLiteral("Whooooooo", true)
-    //this._indentedPrintEnd()
-    //this._indent--
+    const identifiers = this._getIdentifiers(ctx, "primary")
     return identifiers
   }
 
   primaryPrefix(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "primaryPrefix")
+    const identifiers = this._getIdentifiers(ctx, "primaryPrefix")
     return identifiers
   }
 
   unaryExpression(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "unaryExpression")
+    const identifiers = this._getIdentifiers(ctx, "unaryExpression")
     return identifiers
   }
 
   binaryExpression(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "binaryExpression")
+    const identifiers = this._getIdentifiers(ctx, "binaryExpression")
     return identifiers
   }
 
   ternaryExpression(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "ternaryExpression")
+    const identifiers = this._getIdentifiers(ctx, "ternaryExpression")
     return identifiers
   }
 
   expression(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "expression")
+    const identifiers = this._getIdentifiers(ctx, "expression")
     return identifiers
   }
 
   argumentList(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "argumentList")
+    const identifiers = this._getIdentifiers(ctx, "argumentList")
     return identifiers
   }
 
   methodInvocationSuffix(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "methodInvocationSuffix")
+    const identifiers = this._getIdentifiers(ctx, "methodInvocationSuffix")
     return identifiers
   }
 
   primarySuffix(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "primarySuffix")
+    const identifiers = this._getIdentifiers(ctx, "primarySuffix")
     return identifiers
   }
 
   fqnOrRefType(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "fqnOrRefType")
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefType")
     return identifiers
   }
 
   fqnOrRefTypePartFirst(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "fqnOrRefTypePartFirst")
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefTypePartFirst")
     return identifiers
   }
 
-  // TODO: May need to loop through the sub visits of
-  // this one cuz it may have multiple ones for chained calls
-  // For example: 
-  // div().with(
-  //      StylesUtils
-  //        .responsiveMedium(...)
-  //      .with(
-  //        SytyleUtils.responsiveLarge(...)
-  //      )
-  //    )
   fqnOrRefTypePartRest(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "fqnOrRefTypePartRest")
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefTypePartRest")
     return identifiers
   }
 
   // Forms similar to the base case in recursive
   fqnOrRefTypePartCommon(ctx) {
-    const identifiers = this._getIdentifiersAndPrint(ctx, "fqnOrRefTypePartCommon")
+    const identifiers = this._getIdentifiers(ctx, "fqnOrRefTypePartCommon")
     return identifiers
   }
 }
 
-const visitor = new CallsFinder()
+function getCallsFinder() {
+  const graphVisualizer = visualizer.getVisualizer()
+  const nodeOrganizer = node_organizer.getOrganizer()
+  const visitor = new CallsFinder(graphVisualizer, nodeOrganizer)
 
-module.exports = visitor
+  return visitor
+}
+
+module.exports = getCallsFinder()
