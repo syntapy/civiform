@@ -1,4 +1,5 @@
 const fs = require('fs');
+const visualizer = require('./css_trim/visualizer')
 const baseStyles = require('./css_trim/base_styles')
 const callsFinder = require('./css_trim/calls_finder')
 

@@ -1,6 +1,7 @@
 class NodeOrganizer {
 
-  getNodesSorted(ctx, attributesList) {
+  getNodesSorted(ctx) {
+    const attributesList = Object.keys(ctx)
     const nodesList = []
     for (const attribute of attributesList) {
       if (_.has(ctx, attribute)) {
@@ -19,4 +20,18 @@ class NodeOrganizer {
     return nodesSorted
   }
 
+  isIdentifier(node) {
+    if (_.has(node, 'image') && _.has(node, 'startOffset')) {
+      return true
+    }
+    return false
+  }
 }
+
+function getOrganizer() {
+  const nodeOrganizer = new NodeOrganizer()
+
+  return nodeOrganizer
+}
+
+module.exports = { getOrganizer }
