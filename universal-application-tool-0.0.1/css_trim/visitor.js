@@ -105,26 +105,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
   fieldDeclaration(ctx) {
     const identifiers = this._getIdentifiers(ctx, "fieldDeclaration")
     this.baseStylesParser.maybeProcessBaseStyle(identifiers)
-
     return identifiers
-    //let tmpNode = ctx.variableDeclaratorList[0].children
-    //let node = tmpNode.variableDeclarator[0].children
-
-    //let fieldNameTraverserNode = node.variableDeclaratorId[0].children
-
-    //let styleValueTraverserNode = node.variableInitializer[0].children.expression[0].children.ternaryExpression[0].children
-    //styleValueTraverserNode = styleValueTraverserNode.binaryExpression[0].children
-    //styleValueTraverserNode = styleValueTraverserNode.unaryExpression[0].children
-    //styleValueTraverserNode = styleValueTraverserNode.primary[0].children
-    //styleValueTraverserNode = styleValueTraverserNode.primaryPrefix[0].children
-    //styleValueTraverserNode = styleValueTraverserNode.literal[0].children
-
-    //let fieldName = fieldNameTraverserNode.Identifier[0].image
-    //let styleValue = styleValueTraverserNode.StringLiteral[0].image
-
-    //let resultItem = {key: fieldName, val: styleValue}
-
-    //result.push(resultItem)
   }
 
   fieldModifier(ctx) {
