@@ -54,6 +54,8 @@ class GraphVisualizer {
     this._level = 0
     this._printChildrenLevel = []
     this._printCoreRuleChildrenOnly = true
+    this._printAllRules = true
+    this._printNothing = true
 
     // Set this to true to find out what child nodes the primary
     // grammar rule has
@@ -170,7 +172,9 @@ class GraphVisualizer {
 
     let printGrammar = false
 
-    if (isRoot) {
+    if (this._printAllRules) {
+      printGrammar = true
+    } else if (isRoot) {
       printGrammar = true
     } else if (isCoreRule) {
       printGrammar = true
@@ -208,7 +212,9 @@ class GraphVisualizer {
   // leadup: white space or dashed lines before the node being printed
   // literal: the node being printed, could be a grammar rule or an identifier
   _printLiteral(leadup, literal) {
-    console.log(leadup + literal)
+    if (this._printNothing === false) {
+      console.log(leadup + literal)
+    }
   }
 }
 

@@ -37,7 +37,7 @@ class NodeOrganizer {
   }
 
   isIdentifier(node) {
-    if (_.has(node, 'image') && _.has(node, 'startOffset')) {
+    if (_.has(node, 'image')) {
       return true
     }
     return false

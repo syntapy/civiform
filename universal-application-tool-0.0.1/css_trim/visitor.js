@@ -2,10 +2,11 @@ const parser = require('java-parser')
 const traverse = require('./traverse')
 const visualizer = require('./visualizer')
 const node_organizer = require('./node_organizer')
+const styleFinder = require('./styles_finder')
 var _ = require('lodash')
 
 class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
-  constructor(graphVisualizer, nodeOrganizer) {
+  constructor(graphVisualizer, nodeOrganizer, baseStylesParser) {
     super()
 
     // Just make sure we're not overwriting anything from super class
@@ -15,13 +16,11 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._assertPropertyAvailable('tagRegex')
     this._assertPropertyAvailable('styleList')
     this._assertPropertyAvailable('tagList')
+    this._assertPropertyAvailable('baseStylesParser')
 
+    this.baseStylesParser = baseStylesParser
     this.graphVisualizer = graphVisualizer
     this.nodeOrganizer = nodeOrganizer
-    this.callRegex = /[0-9A-Z_]+/
-    this.tagRegex = /[0-6a-z:]+/
-    this.styleList = []
-    this.tagList = []
     this.validateVisitor()
   }
 
@@ -47,20 +46,24 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     const numChildren = subNodesSorted.length
     this.graphVisualizer.pushGrammarRule(grammarRule, numChildren)
 
-    const identifierList = []
-    let  tmpArray
+    let identifierList = []
+    let identifierSublist
 
     for (const node of subNodesSorted) {
       if (this.nodeOrganizer.isIdentifier(node)) {
         this.graphVisualizer.pushIdentifier(node.image)
+        //console.log(node)
         identifierList.push(node.image)
         this.graphVisualizer.pop()
       } else {
-        tmpArray = this.visit(node)
-        identifierList.concat(tmpArray)
+        identifierSublist = this.visit(node)
+        if (identifierSublist) {
+          identifierList.push(...identifierSublist)
+        }
       }
     }
 
+    //console.log(identifierList)
     //this.graphVisualizer.maybePrintCode(grammarRule, identifierList)
     this.graphVisualizer.pop(grammarRule)
 
@@ -93,6 +96,86 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       }
     }
   }*/
+
+  packageOrTypeName(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "packageOrTypeName")
+    return identifiers
+  }
+
+  fieldDeclaration(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "fieldDeclaration")
+    this.baseStylesParser.maybeProcessBaseStyle(identifiers)
+
+    return identifiers
+    //let tmpNode = ctx.variableDeclaratorList[0].children
+    //let node = tmpNode.variableDeclarator[0].children
+
+    //let fieldNameTraverserNode = node.variableDeclaratorId[0].children
+
+    //let styleValueTraverserNode = node.variableInitializer[0].children.expression[0].children.ternaryExpression[0].children
+    //styleValueTraverserNode = styleValueTraverserNode.binaryExpression[0].children
+    //styleValueTraverserNode = styleValueTraverserNode.unaryExpression[0].children
+    //styleValueTraverserNode = styleValueTraverserNode.primary[0].children
+    //styleValueTraverserNode = styleValueTraverserNode.primaryPrefix[0].children
+    //styleValueTraverserNode = styleValueTraverserNode.literal[0].children
+
+    //let fieldName = fieldNameTraverserNode.Identifier[0].image
+    //let styleValue = styleValueTraverserNode.StringLiteral[0].image
+
+    //let resultItem = {key: fieldName, val: styleValue}
+
+    //result.push(resultItem)
+  }
+
+  fieldModifier(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "fieldModifier")
+    return identifiers
+  }
+
+  unannType(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "unannType")
+    return identifiers
+  }
+
+  unannReferenceType(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "unannReferenceType")
+    return identifiers
+  }
+
+  unannClassOrInterfaceType(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "unannClassOrInterfaceType")
+    return identifiers
+  }
+
+  unannClassType(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "unannClassType")
+    return identifiers
+  }
+
+  variableDeclaratorList(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "variableDeclaratorList")
+    return identifiers
+  }
+
+  variableDeclarator(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "variableDeclarator")
+    return identifiers
+  }
+
+  variableDeclaratorId(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "variableDeclaratorId")
+    return identifiers
+  }
+
+  variableInitializer(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "variableInitializer")
+    return identifiers
+  }
+
+  literal(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "literal")
+    return identifiers
+  }
 
   // This is where most of the decision making in regards whether it encountered
   // e.g. a StyleUtils.uvwXY(..), a Styles.XYZ, or a BaseStyles.UVW
@@ -168,7 +251,8 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 function getCallsFinder() {
   const graphVisualizer = visualizer.getVisualizer()
   const nodeOrganizer = node_organizer.getOrganizer()
-  const visitor = new CallsFinder(graphVisualizer, nodeOrganizer)
+  const baseStylesParser = styleFinder.getBaseStylesParser()
+  const visitor = new CallsFinder(graphVisualizer, nodeOrganizer, baseStylesParser)
 
   return visitor
 }

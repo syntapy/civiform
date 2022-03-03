@@ -3,19 +3,6 @@ const traverse = require('./traverse')
 const visitor = require('./visitor')
 var _ = require('lodash')
 
-const PREFIXES = {
-  'even':'even',
-  'focus':'focus',
-  'focusWithin':'focus-within',
-  'hover':'hover',
-  'disabled':'disabled',
-  'resonsiveSmall':'sm',
-  'responsiveMedium':'md',
-  'responsiveLarge':'lg',
-  'responsiveXLarge':'xl',
-  'responsive2XLarge':'2xl'
-};
-
 //const visitor = new CallsFinder()
 const printer = require('./traverse')
 
@@ -29,6 +16,10 @@ function parse(code) {
   visitor.visit(cst)
 }
 
+function getStylesDict() {
+  return visitor.baseStylesParser.stylesDict
+}
+
 function getCalls() {
   return visitor.styleList
 }
@@ -39,13 +30,16 @@ function getTags() {
 
 /* Small code snippets for testing
  * or manually traversing small syntax tree to discover
- *names of grammar rules
+ * names of grammar rules
  */
 const javaTestCode = `
 import static j2html.TagCreator.div;
 import static j2html.TagCreator;
 
 public class LoginForm extends BaseHtmlView {
+
+  public static final String W_3_5 = "w-3/5";
+  public static final String _SKEW_Y_6 = "-skew-y-6";
 
   public ContainerTag mobilePage(Messages messages) {
     return div().withClasses(StyleUtils.responsiveSmall(Styles.TEXT_XL, Styles.W_2_3));
@@ -58,6 +52,9 @@ public class LoginForm extends BaseHtmlView {
   public ContainerTag header(Messages messages) {
     return TagCreator.h1().withClasses(Styles.BG_BLUE_200, Styles.TEXT_2XL);
   }
+
+  // Line clamp support via @tailwindcss/line-clamp
+  public static final String LINE_CLAMP_1 = "line-clamp-1";
 }
 `
 
@@ -67,6 +64,7 @@ public class LoginForm extends BaseHtmlView {
 function test() {
   console.log("Testing parser for CSS trimming")
   parse(javaTestCode)
+  const stylesDict = getStylesDict()
   const calls = _.sortBy(getCalls())
   const tags = _.sortBy(getTags())
 
@@ -78,18 +76,37 @@ function test() {
   let msgCalls = ""
   let msgTags = ""
 
+  function checkKeyValInStylesDict(key, val) {
+    if (!_.has(stylesDict, key)) {
+      msgCalls = 'Missing key ' + key + ' in styles dictionary'
+      msgCalls += "\nStyles Dictionary has " + Object.keys(stylesDict).length.toString() + " keys"
+      throw msgCalls
+    }
+
+    if (stylesDict[key] !== val) {
+      msgCalls = 'Incorrect style value for ' + key + ' in styles dictionary\n'
+      msgCalls += 'Expected: ' + val + '\n'
+      msgCalls += 'Got:      ' + stylesDict[key]
+      throw msgCalls
+    }
+  }
+
+  checkKeyValInStylesDict('W_3_5', 'w-3/5')
+  checkKeyValInStylesDict('_SKEW_Y_6', '-skew-y-6')
+  checkKeyValInStylesDict('LINE_CLAMP_1', 'line-clamp-1')
+
   if (!_.isEqual(calls, knownCalls)) {
     msgCalls = "Problem finding style calls in test code snippet: \n"
     msgCalls += "Style calls found:    " + calls.toString() + "\n"
     msgCalls += "Style calls expected: " + knownCalls.toString() + "\n"
-    hasError = true
+    throw msgCalls
   }
 
   if (!_.isEqual(tags, knownTags)) {
     msgTags = "Problem finding HTML tags in test code snippet: \n"
-    msgTags += "HTML tags found:    " + tags.toString() + "\n"
-    msgTags += "HTML tags expected: " + knownTags.toString() + "\n"
-    hasError = true
+    msgTags += "HTML tags found:      " + tags.toString() + "\n"
+    msgTags += "HTML tags expected:   " + knownTags.toString() + "\n"
+    throw msgCalls
   }
 
   if (hasError) {
