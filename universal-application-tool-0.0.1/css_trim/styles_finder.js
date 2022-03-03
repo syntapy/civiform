@@ -31,32 +31,21 @@ class BaseStylesParser {
     const key = identifiers[4]
     const val = identifiers[6].replace(/"/g, "")
 
-    console.log(val)
-
     this.stylesDict[key] = val
   }
 
   maybeProcessBaseStyle(identifiers) {
-    //console.log(identifiers.join(' '), ': ', identifiers.length)
-    //console.log(this._styleDefinition)
     if (identifiers.length === this._styleDefinition.length) {
-      //console.log('-'.repeat(25))
-      //console.log(identifiers)
-      //console.log(this._styleDefinition)
       for (const index in this._styleDefinition) {
         let pattern = this._styleDefinition[index]
         let id = identifiers[index]
 
         if (!pattern.test(id)) {
           // Does not match
-          console.log(identifiers.join(' '), ': DOES NOT MATCH')
           return null
         }
       }
 
-      //console.log("Found patterns ", pattern, " in identifiers")
-
-      console.log(identifiers.join(' '))
       // Its a match, so we can add it as a style
       // in our dictionary of all possible styles
       this._extractKeyVal(identifiers)
