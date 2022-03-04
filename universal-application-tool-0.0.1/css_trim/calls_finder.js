@@ -72,7 +72,6 @@ function test() {
   const knownTags = _.sortBy(["div", "body", "h1"])
 
   let hasError = false
-
   let msgCalls = ""
   let msgTags = ""
 

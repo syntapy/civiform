@@ -99,12 +99,13 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 
   packageOrTypeName(ctx) {
     const identifiers = this._getIdentifiers(ctx, "packageOrTypeName")
+    console.log(identifiers.join(''))
     return identifiers
   }
 
   fieldDeclaration(ctx) {
     const identifiers = this._getIdentifiers(ctx, "fieldDeclaration")
-    this.baseStylesParser.maybeProcessBaseStyle(identifiers)
+    this.baseStylesParser.addBaseStyle(identifiers)
     return identifiers
   }
 
@@ -232,7 +233,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
 function getCallsFinder() {
   const graphVisualizer = visualizer.getVisualizer()
   const nodeOrganizer = node_organizer.getOrganizer()
-  const baseStylesParser = styleFinder.getBaseStylesParser()
+  const baseStylesParser = styleFinder.getStylesParser()
   const visitor = new CallsFinder(graphVisualizer, nodeOrganizer, baseStylesParser)
 
   return visitor
