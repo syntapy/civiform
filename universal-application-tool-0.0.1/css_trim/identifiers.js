@@ -6,8 +6,9 @@ class MatchChecker {
   isMatch(identifiers, definition, startOnly=false) {
     let validLength = identifiers.length === definition.length
     if (startOnly) {
-      validLength = identifiers.length > definition.length
+      validLength = identifiers.length >= definition.length
     }
+
 
     if (validLength) {
       for (const index in definition) {
@@ -37,7 +38,8 @@ class MatchChecker {
 // Rather it just focuses on the stuff it knows about
 
 // Parses for all possible styles in Styles.java and BaseStyles.java
-class StylesDict extends MatchChecker {
+// TODO: Rename to StylesDictIdentifierParser
+class StylesDictAggregator extends MatchChecker {
   constructor(patterns) {
     super()
 
@@ -52,6 +54,10 @@ class StylesDict extends MatchChecker {
     ]
 
     this.stylesDict = {}
+  }
+
+  getDict() {
+    return this.stylesDict
   }
 
   _extractKeyVal(identifiers) {
@@ -76,25 +82,26 @@ class StylesDict extends MatchChecker {
   }
 }
 
-const PREFIXES = {
-  'even':'even',
-  'focus':'focus',
-  'focusWithin':'focus-within',
-  'hover':'hover',
-  'disabled':'disabled',
-  'resonsiveSmall':'sm',
-  'responsiveMedium':'md',
-  'responsiveLarge':'lg',
-  'responsiveXLarge':'xl',
-  'responsive2XLarge':'2xl'
-}
-
-class StylesParser extends MatchChecker {
+// TODO rename to StylesIdentifierParser
+class StylesAggregator extends MatchChecker {
   constructor(patterns, stylesDict) {
     super()
 
     this.patterns = patterns
     this.stylesDict = stylesDict
+
+    this.prefixes = {
+      'even':'even',
+      'focus':'focus',
+      'focusWithin':'focus-within',
+      'hover':'hover',
+      'disabled':'disabled',
+      'responsiveSmall':'sm',
+      'responsiveMedium':'md',
+      'responsiveLarge':'lg',
+      'responsiveXLarge':'xl',
+      'responsive2XLarge':'2xl'
+    }
 
     // html tag
     this._tagRegex = /^[a-z0-6]+$/
@@ -110,6 +117,10 @@ class StylesParser extends MatchChecker {
 
     this.stylesList = []
     this.stylesDict = stylesDict
+  }
+
+  getStyles() {
+    return this.stylesList
   }
 
   add(styleOrTag) {
@@ -134,9 +145,11 @@ class StylesParser extends MatchChecker {
   addBaseStyle(identifiers) {
     if (this.isMatch(identifiers, this._styleCallDefinition)) {
       const styleKey = identifiers[2]
-      const styleVal = this.stylesDict.get(styleKey)
+      const styleVal = this.stylesDict[styleKey]
 
-      this.add(styleVal)
+      if (styleVal) {
+        this.add(styleVal)
+      }
     }
   }
 
@@ -150,12 +163,13 @@ class StylesParser extends MatchChecker {
       const prefixCall = identifiers.slice(0, firstIndex)
 
       const prefixKey = prefixCall[2]
-      const prefixVal = PREFIXES[prefixKey]
+      const prefixVal = this.prefixes[prefixKey]
       const subIdentifiers = identifiers.slice(firstIndex, lastIndex)
 
       for (const styleCallMaybe of this._iterateBaseStyles(subIdentifiers)) {
         if (styleCallMaybe) {
-          this.add(prefixVal+':'+styleCallMaybe)
+          const prefixedStyle = prefixVal+':'+styleCallMaybe
+          this.add(prefixedStyle)
         } else {
           break
         }
@@ -175,7 +189,10 @@ class StylesParser extends MatchChecker {
       let styleCall = identifiers[index]; index++
 
       if (this.isMatch([styleClass, dot, styleCall], this._styleCallDefinition)) {
-        yield this.stylesDict.get(styleCall)
+        let value = this.stylesDict[styleCall]
+        if (value) {
+          yield value
+        }
       }
     }
   }
@@ -185,7 +202,7 @@ class StylesParser extends MatchChecker {
     let regexpStringEnd = ')$'
     let regexpStringMidList = []
 
-    for (const string of Object.keys(PREFIXES)) {
+    for (const string of Object.keys(this.prefixes)) {
       regexpStringMidList.push(string)
     }
 
@@ -195,18 +212,18 @@ class StylesParser extends MatchChecker {
 }
 
 // TODO: Turn into singleton maybe?
-function getStylesDict() {
+function getStylesDictAggregator() {
   const patterns = regexPatterns.get()
-  return new StylesDict(patterns)
+  return new StylesDictAggregator(patterns)
 }
 
-function getStylesParser(stylesDict) {
+function getStylesAggregator(stylesDict) {
   const patterns = regexPatterns.get()
-  return new StylesParser(patterns, stylesDict)
+  return new StylesAggregator(patterns, stylesDict)
 }
 
 function getMockStylesDict() {
-  const stylesDict = getStylesDict()
+  const stylesDict = getStylesDictAggregator()
 
   let identifiers = ['public', 'static', 'final', 'String', 'BG_SCROLL', '=', '"bg-scroll"', ';']
   stylesDict.addBaseStyle(identifiers)
@@ -237,12 +254,24 @@ function getMockStylesDict() {
   assert(stylesDict.stylesDict['BG_BLUE_200'] == 'bg-blue-200')
   assert(Object.keys(stylesDict.stylesDict).length === 4)
 
-  return stylesDict
+  return stylesDict.getDict()
 }
 
+/*  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ *  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ *  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ *  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ *  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ *  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ *  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ *  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S  T E S T S
+ */
+
+
 function testImportedTagParser() {
-  const stylesDict = getStylesDict()
-  const stylesParser = getStylesParser()
+  // Don't need anything in stylesDict for these tests
+  const stylesDict = {}
+  const stylesParser = getStylesAggregator(stylesDict)
 
   let identifiers = ['import', 'static', 'j2html', '.', 'TagCreator', '.', 'div', ';']
   stylesParser.addImportedTag(identifiers)
@@ -264,8 +293,9 @@ function testImportedTagParser() {
 }
 
 function testCalledTagParser() {
-  const stylesDict = getStylesDict()
-  const stylesParser = getStylesParser(stylesDict)
+  // Don't need anything in stylesDict for these tests
+  const stylesDict = {}
+  const stylesParser = getStylesAggregator(stylesDict)
 
   let identifiers = ['TagCreator', '.', 'body', '(', ')']
   stylesParser.addCalledTag(identifiers)
@@ -280,7 +310,7 @@ function testCalledTagParser() {
 
 function testBaseStyleParser() {
   const stylesDict = getMockStylesDict()
-  const stylesParser = getStylesParser(stylesDict)
+  const stylesParser = getStylesAggregator(stylesDict)
 
   let identifiers = ['Styles', '.', 'BG_BLUE_200']
   stylesParser.addBaseStyle(identifiers)
@@ -297,7 +327,7 @@ function testBaseStyleParser() {
 
 function testPrefixedStyleParser() {
   const stylesDict = getMockStylesDict()
-  const stylesParser = getStylesParser(stylesDict)
+  const stylesParser = getStylesAggregator(stylesDict)
 
   let identifiers = ['StyleUtils', '.', 'responsiveMedium', '(', 'Styles', '.', 'BG_SCROLL', ')']
   stylesParser.addPrefixedStyle(identifiers)
@@ -312,9 +342,9 @@ function testPrefixedStyleParser() {
   assert(stylesParser.stylesList.includes('focus-within:bg-blue-200'))
 }
 
-testImportedTagParser()
-testCalledTagParser()
-testBaseStyleParser()
-testPrefixedStyleParser()
+//testImportedTagParser()
+//testCalledTagParser()
+//testBaseStyleParser()
+//testPrefixedStyleParser()
 
-module.exports = { getStylesDict, getStylesParser }
+module.exports = { getStylesDictAggregator, getStylesAggregator }

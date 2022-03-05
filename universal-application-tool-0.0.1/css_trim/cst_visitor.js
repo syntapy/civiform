@@ -2,11 +2,11 @@ const parser = require('java-parser')
 const traverse = require('./traverse')
 const visualizer = require('./visualizer')
 const node_organizer = require('./node_organizer')
-const styleFinder = require('./styles_finder')
+const identifiers = require('./identifiers')
 var _ = require('lodash')
 
-class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
-  constructor(graphVisualizer, nodeOrganizer, baseStylesParser) {
+class CstVisitorBase extends parser.BaseJavaCstVisitorWithDefaults {
+  constructor(graphVisualizer, nodeOrganizer, identifiersParser) {
     super()
 
     // Just make sure we're not overwriting anything from super class
@@ -16,19 +16,23 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     this._assertPropertyAvailable('tagRegex')
     this._assertPropertyAvailable('styleList')
     this._assertPropertyAvailable('tagList')
-    this._assertPropertyAvailable('baseStylesParser')
+    this._assertPropertyAvailable('identifiersParser')
 
-    this.baseStylesParser = baseStylesParser
+    this.identifiersParser = identifiersParser
     this.graphVisualizer = graphVisualizer
     this.nodeOrganizer = nodeOrganizer
     this.validateVisitor()
   }
 
+  // keep
   _assertPropertyAvailable(property, msgPortion) {
     const msg = "CallsFinder already has property 'prefixList'. Use a different property name to hold " + msgPortion
-    if (_.has(this, property)) { throw  "property not available" }
+    if (_.has(this, property)) { 
+      throw  "property not available"
+    }
   }
 
+  // keep
   _getExpression(identifiersList) {
     let expression = ''
 
@@ -39,6 +43,7 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     return expression
   }
 
+  // keep
   // Core routine to traverse the concrete syntax tree and 
   // retrieve all leaf node identifiers before current node ctx
   _getIdentifiers(ctx, grammarRule, printCode=false) {
@@ -52,7 +57,6 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     for (const node of subNodesSorted) {
       if (this.nodeOrganizer.isIdentifier(node)) {
         this.graphVisualizer.pushIdentifier(node.image)
-        //console.log(node)
         identifierList.push(node.image)
         this.graphVisualizer.pop()
       } else {
@@ -63,49 +67,13 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
       }
     }
 
-    //console.log(identifierList)
-    //this.graphVisualizer.maybePrintCode(grammarRule, identifierList)
     this.graphVisualizer.pop(grammarRule)
 
     return identifierList
   }
 
-  // All directly imported tags (from e.g. import j2html.TagCreator.<tag>) 
-  // will get added to tailwind.css
-  /*packageOrTypeName(ctx) {
-    super.packageOrTypeName(ctx)
-    let tag = ""
-
-    try {
-      let identifiers = ctx.Identifier
-
-      if (identifiers.length !== 3) { throw "Wrong identifier length. The j2html import we want here has length 3" }
-      if (identifiers[0].image !== "j2html") { throw "Not a j2thml import" }
-      if (identifiers[1].image !== "TagCreator") { throw "Not the right j2hml tag" }
-      if (identifiers[2].image === "each" || identifiers[2].image === "text") { throw "Not an html tag" }
-
-      tag = identifiers[2].image
-
-    } catch (error) {}
-
-    if (typeof(tag) === 'string') {
-      if (tag.length > 0) {
-        if (this.tagRegex.test(tag) === true) {
-          this.tagList.push(tag)
-        }
-      }
-    }
-  }*/
-
-  packageOrTypeName(ctx) {
-    const identifiers = this._getIdentifiers(ctx, "packageOrTypeName")
-    console.log(identifiers.join(''))
-    return identifiers
-  }
-
   fieldDeclaration(ctx) {
     const identifiers = this._getIdentifiers(ctx, "fieldDeclaration")
-    this.baseStylesParser.addBaseStyle(identifiers)
     return identifiers
   }
 
@@ -154,15 +122,11 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     return identifiers
   }
 
-  literal(ctx) {
-    const identifiers = this._getIdentifiers(ctx, "literal")
+  packageOrTypeName(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "packageOrTypeName")
     return identifiers
   }
 
-  // This is where most of the decision making in regards whether it encountered
-  // e.g. a StyleUtils.uvwXY(..), a Styles.XYZ, or a BaseStyles.UVW
-  // Need to chain together the visitor methods so that all nodes are visited
-  // See: https://chevrotain.io/docs/guide/concrete_syntax_tree.html#traversing
   primary(ctx) {
     const identifiers = this._getIdentifiers(ctx, "primary")
     return identifiers
@@ -223,20 +187,84 @@ class CallsFinder extends parser.BaseJavaCstVisitorWithDefaults {
     return identifiers
   }
 
-  // Forms similar to the base case in recursive
   fqnOrRefTypePartCommon(ctx) {
     const identifiers = this._getIdentifiers(ctx, "fqnOrRefTypePartCommon")
     return identifiers
   }
+
+  literal(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "literal")
+    return identifiers
+  }
+
+  literal(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "literal")
+    return identifiers
+  }
+
 }
 
-function getCallsFinder() {
+// Used for parsing Styles.java and the like to create a dictionary of styles
+class StylesDictAggregator extends CstVisitorBase {
+
+  constructor(graphVisualizer, nodeOrganizer, identifiersParser) {
+    super(graphVisualizer, nodeOrganizer, identifiersParser)
+  }
+
+  get() {
+    return this.identifiersParser.getDict()
+  }
+
+  fieldDeclaration(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "fieldDeclaration")
+    this.identifiersParser.addBaseStyle(identifiers)
+    return identifiers
+  }
+}
+
+// Used for parsing regular java files under app/views/**/*.java
+// for calls to Styles.java, BaseStyles.java, ReferenceClasses.java, and StyleUtils.java
+class StylesAggregator extends CstVisitorBase {
+
+  constructor(graphVisualizer, nodeOrganizer, identifiersParser) {
+    super(graphVisualizer, nodeOrganizer, identifiersParser)
+  }
+
+  get() {
+    return this.identifiersParser.getStyles()
+  }
+
+  packageOrTypeName(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "packageOrTypeName")
+    this.identifiersParser.addImportedTag(identifiers)
+    return identifiers
+  }
+
+  // This is where most of the decision making in regards whether it encountered
+  // e.g. a StyleUtils.uvwXY(..), a Styles.XYZ, or a BaseStyles.UVW
+  // Need to chain together the visitor methods so that all nodes are visited
+  // See: https://chevrotain.io/docs/guide/concrete_syntax_tree.html#traversing
+  primary(ctx) {
+    const identifiers = this._getIdentifiers(ctx, "primary")
+    this.identifiersParser.addCalledTag(identifiers)
+    this.identifiersParser.addBaseStyle(identifiers)
+    this.identifiersParser.addPrefixedStyle(identifiers)
+    return identifiers
+  }
+}
+
+function getStylesDictAggregator() {
   const graphVisualizer = visualizer.getVisualizer()
   const nodeOrganizer = node_organizer.getOrganizer()
-  const baseStylesParser = styleFinder.getStylesParser()
-  const visitor = new CallsFinder(graphVisualizer, nodeOrganizer, baseStylesParser)
-
-  return visitor
+  const identifierParser = identifiers.getStylesDictAggregator()
+  return new StylesDictAggregator(graphVisualizer, nodeOrganizer, identifierParser)
 }
 
-module.exports = getCallsFinder()
+function getStylesAggregator(stylesDict) {
+  const graphVisualizer = visualizer.getVisualizer()
+  const nodeOrganizer = node_organizer.getOrganizer()
+  const stylesParser = identifiers.getStylesAggregator(stylesDict)
+  return new StylesAggregator(graphVisualizer, nodeOrganizer, stylesParser)
+}
+
+module.exports = { getStylesDictAggregator, getStylesAggregator }
