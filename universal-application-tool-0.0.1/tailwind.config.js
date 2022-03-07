@@ -23,6 +23,24 @@ function genStylesDict() {
 
 genStylesDict()
 
+var processedTs = false
+
+function processTypescript(output) {
+  const assetsFolder = './app/assets/javascripts/';
+  let files = fs.readdirSync(assetsFolder);
+
+  for (const f of files) {
+    let data = fs.readFileSync(assetsFolder + f, 'utf8').split('\n');
+    for (const line of data) {
+      matches = line.matchAll(/["'][\.a-z0-9/:-]+["']/g);
+      for (m of matches) {
+        let mr = m[0].replace(/['"]+/g, '');
+        output.push(mr);
+      }
+    }
+  }
+}
+
 module.exports = {
   purge: {
     enabled: true,
@@ -38,7 +56,14 @@ module.exports = {
       java: (content) => {
         cssTrimmer.resetTrimmed()
         cssTrimmer.parseForStyles(content)
-        return cssTrimmer.getTrimmed()
+        output = cssTrimmer.getTrimmed()
+
+        if (processedTs === false) {
+          processTypescript(output)
+          processedTs = true
+        }
+
+        return output
       },
     },
   },
