@@ -106,7 +106,7 @@ class StylesAggregator extends MatchChecker {
     // html tag
     this._tagRegex = /^[a-z0-6]+$/
 
-    this._importedTagDefinition = [/^import$/, /^static$/, /^j2html$/, /^\.$/, /^TagCreator$/, /^\.$/, this._tagRegex, /^;$/ ]
+    this._importedTagDefinition = [/^j2html$/, /^\.$/, /^TagCreator$/, /^\.$/, this._tagRegex]
     this._tagCreatorCallDefinition = [/^TagCreator$/, /^\.$/, this._tagRegex ]
     this._j2htmlCallDefinition = [/^j2html$/, /^\.$/, /^TagCreator$/, /^\.$/, this._tagRegex ]
     this._styleCallDefinition = [/^(Styles|BaseStyles|ReferenceClasses)$/, /^\.$/, this.patterns._styleVarRegex ]
@@ -121,7 +121,7 @@ class StylesAggregator extends MatchChecker {
   }
 
   reset() {
-    this.stylesList = ['html']
+    this.stylesList = []
   }
 
   getStyles() {
@@ -134,7 +134,7 @@ class StylesAggregator extends MatchChecker {
 
   addImportedTag(identifiers) {
     if (this.isMatch(identifiers, this._importedTagDefinition)) {
-      const tag = identifiers[6]
+      const tag = identifiers[4]
       this.add(tag)
     }
   }
@@ -146,7 +146,6 @@ class StylesAggregator extends MatchChecker {
       this.add(tag)
     } else if (this.isMatch(identifiers, this._j2htmlCallDefinition, startOnly)) {
       const tag = identifiers[4]
-      console.log(tag)
       this.add(tag)
     }
   }
@@ -277,12 +276,13 @@ function getMockStylesDict() {
  */
 
 
+
 function testImportedTagParser() {
   // Don't need anything in stylesDict for these tests
   const stylesDict = {}
   const stylesParser = getStylesAggregator(stylesDict)
 
-  let identifiers = ['import', 'static', 'j2html', '.', 'TagCreator', '.', 'div', ';']
+  let identifiers = ['j2html', '.', 'TagCreator', '.', 'div']
   stylesParser.addImportedTag(identifiers)
   assert(stylesParser.stylesList.length === 1)
   assert(stylesParser.stylesList[0] === 'div')
@@ -295,10 +295,15 @@ function testImportedTagParser() {
   stylesParser.addImportedTag(identifiers)
   assert(stylesParser.stylesList.length === 1)
 
-  identifiers = ['import', 'static', 'j2html', '.', 'TagCreator', '.', 'h6', ';']
+  identifiers = ['j2html', '.', 'TagCreator', '.', 'h6']
   stylesParser.addImportedTag(identifiers)
   assert(stylesParser.stylesList.length === 2)
   assert(stylesParser.stylesList[1] === 'h6')
+
+  identifiers = ['j2html', '.', 'TagCreator', '.', 'p']
+  stylesParser.addImportedTag(identifiers)
+  assert(stylesParser.stylesList.length === 3)
+  assert(stylesParser.stylesList[2] === 'p')
 }
 
 function testCalledTagParser() {
