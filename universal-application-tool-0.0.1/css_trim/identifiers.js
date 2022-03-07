@@ -107,7 +107,8 @@ class StylesAggregator extends MatchChecker {
     this._tagRegex = /^[a-z0-6]+$/
 
     this._importedTagDefinition = [/^import$/, /^static$/, /^j2html$/, /^\.$/, /^TagCreator$/, /^\.$/, this._tagRegex, /^;$/ ]
-    this._calledTagDefinition = [/^TagCreator$/, /^\.$/, this._tagRegex ]
+    this._tagCreatorCallDefinition = [/^TagCreator$/, /^\.$/, this._tagRegex ]
+    this._j2htmlCallDefinition = [/^j2html$/, /^\.$/, /^TagCreator$/, /^\.$/, this._tagRegex ]
     this._styleCallDefinition = [/^(Styles|BaseStyles|ReferenceClasses)$/, /^\.$/, this.patterns._styleVarRegex ]
 
     // e.g. the 'StyleUtils.responsiveLarge' in 'Styleutils.responsiveLarge(Styles.XYZ, Styles.UVW)'
@@ -120,7 +121,7 @@ class StylesAggregator extends MatchChecker {
   }
 
   reset() {
-    this.stylesList = []
+    this.stylesList = ['html']
   }
 
   getStyles() {
@@ -140,8 +141,12 @@ class StylesAggregator extends MatchChecker {
 
   addCalledTag(identifiers) {
     const startOnly = true
-    if (this.isMatch(identifiers, this._calledTagDefinition, startOnly)) {
+    if (this.isMatch(identifiers, this._tagCreatorCallDefinition, startOnly)) {
       const tag = identifiers[2]
+      this.add(tag)
+    } else if (this.isMatch(identifiers, this._j2htmlCallDefinition, startOnly)) {
+      const tag = identifiers[4]
+      console.log(tag)
       this.add(tag)
     }
   }
@@ -310,6 +315,11 @@ function testCalledTagParser() {
   stylesParser.addCalledTag(identifiers)
   assert(stylesParser.stylesList.length === 2)
   assert(stylesParser.stylesList[1] === 'button')
+
+  identifiers = ['j2html', '.', 'TagCreator', '.', 'body', '(', ')', '.', 'with', '(', 'renderHeader', '(', ')', ')', '.', 'with', '(', 'renderMain', '(', ')', ')', ';']
+  stylesParser.addCalledTag(identifiers)
+  assert(stylesParser.stylesList.length === 3)
+  assert(stylesParser.stylesList[2] === 'body')
 }
 
 function testBaseStyleParser() {
