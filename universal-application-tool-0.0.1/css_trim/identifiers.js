@@ -115,8 +115,12 @@ class StylesAggregator extends MatchChecker {
     this._stylePrefixedCallStart = [ /^StyleUtils$/, /^\.$/, stylePrefixCallRegex, /^\($/ ]
     this._stylePrefixedCallEnd = [ /^\)$/ ]
 
-    this.stylesList = []
+    this.reset()
     this.stylesDict = stylesDict
+  }
+
+  reset() {
+    this.stylesList = []
   }
 
   getStyles() {

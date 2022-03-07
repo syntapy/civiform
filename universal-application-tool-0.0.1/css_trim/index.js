@@ -22,7 +22,7 @@ class CssTrimmer {
     return this.stylesDictAggregator.get()
   }
 
-  genStylesAggregator() {
+  generateStylesAggregator() {
     const stylesDict = this.stylesDictAggregator.get()
     this.stylesAggregator = cst_visitor.getStylesAggregator(stylesDict)
   }
@@ -34,6 +34,12 @@ class CssTrimmer {
 
   getTrimmed() {
     return this.stylesAggregator.get()
+  }
+
+  resetTrimmed() {
+    if (this.stylesAggregator) {
+      this.stylesAggregator.reset()
+    }
   }
 }
 
@@ -99,7 +105,7 @@ function test() {
 
   assert(vals.every(function (element) {return knownVals.includes(element)}))
 
-  stylesTrimmer.genStylesAggregator()
+  stylesTrimmer.generateStylesAggregator()
   stylesTrimmer.parseForStyles(javaTestCode)
 
   const finds = stylesTrimmer.getTrimmed()

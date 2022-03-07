@@ -234,6 +234,10 @@ class StylesAggregator extends CstVisitorBase {
     return this.identifiersParser.getStyles()
   }
 
+  reset() {
+    this.identifiersParser.reset()
+  }
+
   packageOrTypeName(ctx) {
     const identifiers = this._getIdentifiers(ctx, "packageOrTypeName")
     this.identifiersParser.addImportedTag(identifiers)

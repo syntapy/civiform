@@ -18,7 +18,7 @@ function genStylesDict() {
     throw 'error reading Styles.java for tailwindcss processing: ' + error.message;
   }
 
-  cssTrimmer.genStylesAggregator()
+  cssTrimmer.generateStylesAggregator()
 }
 
 genStylesDict()
@@ -36,8 +36,8 @@ module.exports = {
     },
     transform: {
       java: (content) => {
+        cssTrimmer.resetTrimmed()
         cssTrimmer.parseForStyles(content)
-
         return cssTrimmer.getTrimmed()
       },
     },
