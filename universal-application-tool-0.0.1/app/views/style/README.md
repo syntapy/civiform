@@ -13,11 +13,10 @@ by parsing our code for calls to styles in style definition files.
 
 This puts one constraint on how you can use methods in `StyleUtils.java`
 
-- *When calling any method from the `StyleUtils` class, the argument(s) to that method must be a direct call to a field
-  in the style definition files (Styles.java, BaseStyles.java, ReferenceClasses.java). For example you can call
-	`StyleUtils.responsiveMedium(Styles.MT_5, Styles.MB_2)` for any number of arguments, but you cannot do 
-	`String a = Styles.MT_5; String b = Styles.MB_2; StyleUtils.responsiveMedium(a, b)` or the like*. So no setting styles
-	with loops, though there probably isn't a use case for those anyways
+- *When calling any public method from the `StyleUtils` class except for `joinStyles(..)`, the argument(s) to that method 
+  must be a direct call to a field in (Styles.java or ReferenceClasses.java). 
+	For example you can call `StyleUtils.responsiveMedium(Styles.MT_5, Styles.MB_2)` for any number of arguments, but you cannot do 
+	`StyleUtils.responsiveMedium(BaseStyles.XYZ)`, or passing `Styles.XYZ` value as a variable* 
 
 Also, if not obvious already, *fields in any styles definition files which are assigned with string literals can only have uppercase letters, 
 	numbers, and underscores.* In other words, they should match the /[0-9A-Z_]+/ regular expression, otherwise they will not 
