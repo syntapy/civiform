@@ -6,7 +6,7 @@ const cssTrimmer = require('./css_trim')
 
 function genStylesDict() {
   const folder = './app/views/style/'
-  const specialFiles = ['Styles.java', 'BaseStyles.java', 'ReferenceClasses.java'];
+  const specialFiles = ['Styles.java', 'ReferenceClasses.java'];
   try {
     for (file of specialFiles) {
       let code = fs.readFileSync(folder+file, 'utf8');
