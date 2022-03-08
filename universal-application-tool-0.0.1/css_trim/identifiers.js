@@ -386,9 +386,9 @@ function testPrefixedStyleParser() {
   assert(stylesParser.stylesList.includes('focus-within:bg-blue-200'))
 }
 
-//testImportedTagParser()
-//testCalledTagParser()
-//testBaseStyleParser()
-//testPrefixedStyleParser()
+testImportedTagParser()
+testCalledTagParser()
+testBaseStyleParser()
+testPrefixedStyleParser()
 
 module.exports = { getStylesDictAggregator, getStylesAggregator }
