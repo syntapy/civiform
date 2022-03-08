@@ -47,6 +47,13 @@ class DisplayModifier {
   }
 }
 
+// This is a text-based graph visualizer I used to look through
+// the CST. The idea is to help a developer months or years later
+// to easily understand the structure of the CST and how it relates 
+// to the grammar so that the logic behind any changes to the parser
+// can easily be determined in a hectic day
+//
+// TODO Incorporate into `bin/refresh-styles` as options
 class GraphVisualizer {
   constructor(nodeOrganizer, displayMod) {
     this.nodeOrganizer = nodeOrganizer
