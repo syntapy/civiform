@@ -1,5 +1,4 @@
 const parser = require('java-parser')
-const traverse = require('./traverse')
 const visualizer = require('./visualizer')
 const node_organizer = require('./node_organizer')
 const identifiers = require('./identifiers')

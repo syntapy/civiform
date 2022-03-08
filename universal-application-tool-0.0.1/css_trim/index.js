@@ -1,11 +1,7 @@
 const assert = require('assert')
 const parser = require('java-parser')
-const traverse = require('./traverse')
 const cst_visitor = require('./cst_visitor')
 var _ = require('lodash')
-
-//const visitor = new CallsFinder()
-const printer = require('./traverse')
 
 class CssTrimmer {
   constructor() {
