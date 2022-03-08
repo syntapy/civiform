@@ -2,6 +2,26 @@ const assert = require('assert')
 const _ = require('lodash')
 const regexPatterns = require('./regex')
 
+// Checks if a list of identifers matches a definition
+// The startOnly variable is for cases where we want to check
+// only the beginning of the list of identifiers
+//
+// E.g., if we come to a node in the CST where we have Styles.XYZ
+// that will have 3 identifiers in the list:
+//
+//   identifiers = ['Styles', '.', 'XYZ']
+// 
+// In that case we check the whole thing
+//
+// But in a call like 'StyleUtils.responsiveMedium(Styles.UVW, Styles.XYZ)'
+// we will have identifiers be (notice theres no spaces)
+//
+//   identifiers = ['StyleUtils', '.', 'repsonsiveMedium', '(', 'Styles', '.', 'UVW', ',', 'Styles', '.', 'XYZ', ')']
+//
+// In this case we only  check that its the beginning of a StyleUtils method call
+// and determine which method it was to decide on the prefix. The parent caller for this
+// would then parse the Styles.UVW and Styles.XYZ to identify which styles to attach
+// that prefix to
 class MatchChecker {
   isMatch(identifiers, definition, startOnly=false) {
     let validLength = identifiers.length === definition.length
@@ -28,17 +48,9 @@ class MatchChecker {
   }
 }
 
-// Yes, parsers to parse parsed results. But the first round of parsing 
-// makes this a robust solution for trimming styles
-// 
-// These parser only need to worry about whether it encountered a match. And it starts its
-// process of parsing / checking at every node in the tree during the visitor's traversal
-// so it doesn't need to think about all the myriads of input that Java can throw at it
-//
-// Rather it just focuses on the stuff it knows about
-
-// Parses for all possible styles in Styles.java and BaseStyles.java
-// TODO: Rename to StylesDictIdentifierParser
+// Parses for all possible styles in Styles.java and ReferenceClasses.java
+// This is then used as a lookup dictionary to identify calls to e.g. 
+// Styles.XYZ throughout the code and match them with the tailwind class
 class StylesDictAggregator extends MatchChecker {
   constructor(patterns) {
     super()
@@ -61,6 +73,7 @@ class StylesDictAggregator extends MatchChecker {
   }
 
   _extractKeyVal(identifiers) {
+    // This would be 'XYZ' in 
     const key = identifiers[4]
     const val = identifiers[6].replace(/"/g, "")
 
@@ -82,7 +95,11 @@ class StylesDictAggregator extends MatchChecker {
   }
 }
 
-// TODO rename to StylesIdentifierParser
+// This uses the above to match calls to Styles.XYZ to the tailwind class
+//
+// It also gets all the HTML tags used, as well as calls to 'StyleUtils.mediaQueryMethod(args..)'
+//
+// The styles dict above must be created first
 class StylesAggregator extends MatchChecker {
   constructor(patterns, stylesDict) {
     super()
@@ -132,6 +149,7 @@ class StylesAggregator extends MatchChecker {
     this.stylesList.push(styleOrTag)
   }
 
+  // Gets HTML tag matching e.g. 'import static j2hmlt.TagCreator.h1'
   addImportedTag(identifiers) {
     if (this.isMatch(identifiers, this._importedTagDefinition)) {
       const tag = identifiers[4]
@@ -139,6 +157,8 @@ class StylesAggregator extends MatchChecker {
     }
   }
 
+  // Gets HTML tag matching e.g. 'TagCreator.h1(args..)'
+  // of 'j2html.TagCreator.h1(args...)'
   addCalledTag(identifiers) {
     const startOnly = true
     if (this.isMatch(identifiers, this._tagCreatorCallDefinition, startOnly)) {
@@ -150,6 +170,7 @@ class StylesAggregator extends MatchChecker {
     }
   }
 
+  // Adds tailwind class from a basic call to a 'Styles.XYZ' or a 'ReferenceClasses.XYZ'
   addBaseStyle(identifiers) {
     if (this.isMatch(identifiers, this._styleCallDefinition)) {
       const styleKey = identifiers[2]
@@ -161,8 +182,11 @@ class StylesAggregator extends MatchChecker {
     }
   }
 
+  // For processing media queries refernced by e.g. 'Styleutils.responsiveMedium(Styles.XYZ, Styles.UVW)'
   addPrefixedStyle(identifiers) {
     const startOnly = true
+
+    // Checks if the begining matches 'StyleUtils.someMediaQueryMethod'
     if (this.isMatch(identifiers, this._stylePrefixedCallStart, startOnly)) {
       const length = identifiers.length
       let lastIndex = length-1 // skip the last ')' in StyleUtils.responsiveXYX(..)
@@ -174,6 +198,7 @@ class StylesAggregator extends MatchChecker {
       const prefixVal = this.prefixes[prefixKey]
       const subIdentifiers = identifiers.slice(firstIndex, lastIndex)
 
+      // Look at each Styles.XYZ passed to the media query method
       for (const styleCallMaybe of this._iterateBaseStyles(subIdentifiers)) {
         if (styleCallMaybe) {
           const prefixedStyle = prefixVal+':'+styleCallMaybe

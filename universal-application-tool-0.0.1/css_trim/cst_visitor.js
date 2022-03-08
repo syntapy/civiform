@@ -5,6 +5,18 @@ const node_organizer = require('./node_organizer')
 const identifiers = require('./identifiers')
 var _ = require('lodash')
 
+// The BaseJavaCstVisitorWithDefaults has a predefined method for
+// every node in a concrete syntax tree. Each node is either a
+// singly grammar rule or single identifer. Leaf nodes are identifiers
+//
+// Each non-leaf node also has one or more children, which can be identifiers
+// or grammar rules
+//
+// In the BaseJavaCstVisitorWithDefaults, each node is visited starting
+// from the root node when visitor.visit() is called. At each node
+// the method in BaseJavaCstVisitorWithDefaults corresponding to its grammar 
+// rule is run. Here we override a lot of the methods of BaseJavaCstVisitorWithDefaults
+// so that we can do our own logic at each node
 class CstVisitorBase extends parser.BaseJavaCstVisitorWithDefaults {
   constructor(graphVisualizer, nodeOrganizer, identifiersParser) {
     super()
@@ -43,10 +55,15 @@ class CstVisitorBase extends parser.BaseJavaCstVisitorWithDefaults {
     return expression
   }
 
-  // keep
   // Core routine to traverse the concrete syntax tree and 
   // retrieve all leaf node identifiers before current node ctx
   _getIdentifiers(ctx, grammarRule, printCode=false) {
+
+    // We need to sort the elements by location in the original code
+    // so that we process them (visit them) in that order)
+    // 
+    // This enables getting all the leaf identifiers in the original
+    // order
     const subNodesSorted = this.nodeOrganizer.getNodesSorted(ctx)
     const numChildren = subNodesSorted.length
     this.graphVisualizer.pushGrammarRule(grammarRule, numChildren)
@@ -72,16 +89,25 @@ class CstVisitorBase extends parser.BaseJavaCstVisitorWithDefaults {
     return identifierList
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Grammar rule fiels. These run for every occurance of a specific grammar rule
+  //////////////////////////////////////////////////////////////////////////////////////
+
+  // field declaration in a class. e.g.
+  // public static String A = "a";
+  // is a field declaration
   fieldDeclaration(ctx) {
     const identifiers = this._getIdentifiers(ctx, "fieldDeclaration")
     return identifiers
   }
 
+  // This e.g. 'public', and 'static' in the field declaration
   fieldModifier(ctx) {
     const identifiers = this._getIdentifiers(ctx, "fieldModifier")
     return identifiers
   }
 
+  // This e.g. 'String' in the field declaration
   unannType(ctx) {
     const identifiers = this._getIdentifiers(ctx, "unannType")
     return identifiers
@@ -127,11 +153,19 @@ class CstVisitorBase extends parser.BaseJavaCstVisitorWithDefaults {
     return identifiers
   }
 
+  // A primary is a part of an expression that produces a value I think
+  // For instance, 'class.method(args...)' is a primary
+  //
+  // In our case, primaries of interest are e.g.:
+  // 'Styles.BG_BLUE_200', 
+  // 'StyleUtils.responsiveMedium(Styles.MT_2)'
   primary(ctx) {
     const identifiers = this._getIdentifiers(ctx, "primary")
     return identifiers
   }
 
+  // In 'Styles.BG_BLUE_200', the primary prefix is 'Styles'
+  // In 'StyleUtils.responsiveMedium(Styles.MT_2)' it is 'StyleUtils'
   primaryPrefix(ctx) {
     const identifiers = this._getIdentifiers(ctx, "primaryPrefix")
     return identifiers
@@ -167,6 +201,11 @@ class CstVisitorBase extends parser.BaseJavaCstVisitorWithDefaults {
     return identifiers
   }
 
+  // In 'StyleUtils.responsiveMedium(Styles.MT_2)' the primarySuffix
+  // is 'responsiveMedium(Styles.MT_2)'. There is a '.' identifier separating
+  //
+  // The prefix and the suffix in the primary node, which is a parent of the
+  // primarySuffix
   primarySuffix(ctx) {
     const identifiers = this._getIdentifiers(ctx, "primarySuffix")
     return identifiers
@@ -204,7 +243,8 @@ class CstVisitorBase extends parser.BaseJavaCstVisitorWithDefaults {
 
 }
 
-// Used for parsing Styles.java and the like to create a dictionary of styles
+// Used for parsing Styles.java and RerenceClasses.java to create a 
+// lookup dictionary to match their field calls with tailwind classes
 class StylesDictAggregator extends CstVisitorBase {
 
   constructor(graphVisualizer, nodeOrganizer, identifiersParser) {
@@ -223,7 +263,7 @@ class StylesDictAggregator extends CstVisitorBase {
 }
 
 // Used for parsing regular java files under app/views/**/*.java
-// for calls to Styles.java, BaseStyles.java, ReferenceClasses.java, and StyleUtils.java
+// for calls to Styles.java, ReferenceClasses.java, and StyleUtils.java
 class StylesAggregator extends CstVisitorBase {
 
   constructor(graphVisualizer, nodeOrganizer, identifiersParser) {
