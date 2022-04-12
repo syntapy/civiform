@@ -154,7 +154,7 @@ public class ApplicantLayout extends BaseHtmlLayout {
                 .with(csrfInput)
                 .with(redirectInput)
                 .with(languageDropdown)
-                .with(TagCreator.button().withId("cf-update-lang").withType("submit").isHidden());
+                .with(TagCreator.button().withId("cf-update-lang").attr("type", "submit").isHidden());
       }
     }
     return languageForm;

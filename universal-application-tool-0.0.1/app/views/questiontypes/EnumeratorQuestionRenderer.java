@@ -123,7 +123,7 @@ public class EnumeratorQuestionRenderer extends ApplicantQuestionRenderer {
         messages.at(MessageKey.ENUMERATOR_DIALOG_CONFIRM_DELETE.getKeyName(), localizedEntityType);
     Tag removeEntityButton =
         TagCreator.button()
-            .withType("button")
+            .attr("type", "button")
             .withCondId(existingIndex.isPresent(), existingIndex.map(String::valueOf).orElse(""))
             .attr(
                 "onclick",

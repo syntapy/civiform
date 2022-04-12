@@ -50,24 +50,24 @@ public class AzureStorageDevViewStrategy implements CloudStorageDevViewStrategy 
     ContainerTag formTag = form().withId("azure-upload-form-component");
 
     return formTag
-        .with(input().withType("file").withName("file"))
-        .with(input().withType("hidden"))
+        .with(input().attr("type", "file").withName("file"))
+        .with(input().attr("type", "hidden"))
         .withName("key")
         .withValue(request.fileName())
-        .with(input().withType("hidden").withName("sasToken").withValue(request.sasToken()))
-        .with(input().withType("hidden").withName("blobUrl").withValue(request.blobUrl()))
+        .with(input().attr("type", "hidden").withName("sasToken").withValue(request.sasToken()))
+        .with(input().attr("type", "hidden").withName("blobUrl").withValue(request.blobUrl()))
         .with(
-            input().withType("hidden").withName("containerName").withValue(request.containerName()))
-        .with(input().withType("hidden").withName("fileName").withValue(request.fileName()))
-        .with(input().withType("hidden").withName("accountName").withValue(request.accountName()))
+            input().attr("type", "hidden").withName("containerName").withValue(request.containerName()))
+        .with(input().attr("type", "hidden").withName("fileName").withValue(request.fileName()))
+        .with(input().attr("type", "hidden").withName("accountName").withValue(request.accountName()))
         .with(
             input()
-                .withType("hidden")
+                .attr("type", "hidden")
                 .withName("successActionRedirect")
                 .withValue(request.successActionRedirect()))
         .with(
             TagCreator.button(text("Upload to Azure Blob Storage"))
-                .withType("submit")
+                .attr("type", "submit")
                 .withId("cf-block-submit"));
   }
 
