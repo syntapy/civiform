@@ -61,7 +61,7 @@ public class RadioButtonQuestionRenderer extends ApplicantQuestionRenderer {
                 input()
                     .withId(id)
                     .attr("type", "radio")
-                    .withName(selectionPath)
+                    .attr("name", selectionPath)
                     .attr("value", String.valueOf(option.id()))
                     .condAttr(checked, Attr.CHECKED, "")
                     .withClasses(

@@ -161,7 +161,7 @@ public class EnumeratorQuestionRenderer extends ApplicantQuestionRenderer {
   private static EmptyTag hiddenDeleteInputTemplate() {
     return input()
         .withId(DELETE_ENTITY_TEMPLATE_ID)
-        .withName(Path.empty().join(Scalar.DELETE_ENTITY).asArrayElement().toString())
+        .attr("name", Path.empty().join(Scalar.DELETE_ENTITY).asArrayElement().toString())
         .attr(Attr.DISABLED, true) // do not submit this with the form
         .withClasses(Styles.HIDDEN);
   }
