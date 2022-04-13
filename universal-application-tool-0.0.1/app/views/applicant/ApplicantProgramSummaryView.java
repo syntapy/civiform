@@ -111,7 +111,7 @@ public final class ApplicantProgramSummaryView extends BaseHtmlView {
             .with(applicationSummary)
             .with(
                 form()
-                    .withAction(submitLink)
+                    .attr("action", submitLink)
                     .withMethod(Http.HttpVerbs.POST)
                     .with(makeCsrfTokenInputTag(params.request()))
                     .with(continueOrSubmitButton));
