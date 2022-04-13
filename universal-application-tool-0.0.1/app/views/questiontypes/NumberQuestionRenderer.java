@@ -3,7 +3,7 @@ package views.questiontypes;
 import static j2html.TagCreator.div;
 
 import com.google.common.collect.ImmutableSet;
-import j2html.tags.Tag;
+
 import java.util.OptionalLong;
 import services.MessageKey;
 import services.applicant.ValidationErrorMessage;

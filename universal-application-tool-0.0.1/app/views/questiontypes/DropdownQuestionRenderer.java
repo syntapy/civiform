@@ -3,7 +3,7 @@ package views.questiontypes;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static j2html.TagCreator.div;
 
-import j2html.tags.Tag;
+
 import java.util.Comparator;
 import play.i18n.Messages;
 import services.MessageKey;

@@ -4,8 +4,8 @@ import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
 
 import j2html.attributes.Attr;
-import j2html.tags.ContainerTag;
-import j2html.tags.Tag;
+
+
 import services.applicant.question.ApplicantQuestion;
 import services.applicant.question.FileUploadQuestion;
 import views.FileUploadViewStrategy;

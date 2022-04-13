@@ -1,6 +1,6 @@
 package views.questiontypes;
 
-import j2html.tags.Tag;
+
 import services.applicant.question.ApplicantQuestion;
 import services.applicant.question.TextQuestion;
 import views.components.FieldWithLabel;

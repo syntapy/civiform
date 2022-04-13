@@ -2,8 +2,8 @@ package views.questiontypes;
 
 import static j2html.TagCreator.div;
 
-import j2html.tags.ContainerTag;
-import j2html.tags.Tag;
+
+
 import services.applicant.question.ApplicantQuestion;
 import views.components.TextFormatter;
 import views.style.ReferenceClasses;

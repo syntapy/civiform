@@ -1,6 +1,6 @@
 package views.questiontypes;
 
-import j2html.tags.Tag;
+
 import java.time.LocalDate;
 import java.util.Optional;
 import services.applicant.question.ApplicantQuestion;

@@ -2,7 +2,7 @@ package views.questiontypes;
 
 import static j2html.TagCreator.div;
 
-import j2html.tags.Tag;
+
 import play.i18n.Messages;
 import services.MessageKey;
 import services.applicant.question.ApplicantQuestion;
