@@ -12,6 +12,10 @@ import com.google.common.collect.ImmutableSet;
 import j2html.TagCreator;
 import j2html.attributes.Attr;
 
+import j2html.tags.specialized.InputTag;
+import j2html.tags.specialized.TextareaTag;
+import j2html.tags.specialized.TextareaTag;
+import j2html.tags.ContainerTag;
 
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -30,7 +34,7 @@ public class FieldWithLabel {
   private static final ImmutableSet<String> STRING_TYPES =
       ImmutableSet.of("text", "checkbox", "radio", "date", "email");
 
-  protected Tag fieldTag;
+  protected ContainerTag<?> fieldTag;
   protected String fieldName = "";
   protected String fieldType = "text";
   protected String fieldValue = "";
@@ -57,47 +61,47 @@ public class FieldWithLabel {
   protected boolean isCurrency = false;
   protected ImmutableList.Builder<String> referenceClassesBuilder = ImmutableList.builder();
 
-  public FieldWithLabel(Tag fieldTag) {
+  public FieldWithLabel(ContainerTag<?> fieldTag) {
     this.fieldTag = checkNotNull(fieldTag);
   }
 
   public static FieldWithLabel checkbox() {
-    Tag fieldTag = TagCreator.input();
+    InputTag fieldTag = TagCreator.input();
     return new FieldWithLabel(fieldTag).setFieldType("checkbox");
   }
 
   public static FieldWithLabel currency() {
-    Tag fieldTag = TagCreator.input();
+    InputTag fieldTag = TagCreator.input();
     return new FieldWithLabel(fieldTag).setFieldType("text").setIsCurrency();
   }
 
   public static FieldWithLabel radio() {
-    Tag fieldTag = TagCreator.input();
+    InputTag fieldTag = TagCreator.input();
     return new FieldWithLabel(fieldTag).setFieldType("radio");
   }
 
   public static FieldWithLabel input() {
-    Tag fieldTag = TagCreator.input();
+    InputTag fieldTag = TagCreator.input();
     return new FieldWithLabel(fieldTag).setFieldType("text");
   }
 
   public static FieldWithLabel number() {
-    Tag fieldTag = TagCreator.input();
+    InputTag fieldTag = TagCreator.input();
     return new FieldWithLabel(fieldTag).setFieldType("number");
   }
 
   public static FieldWithLabel date() {
-    Tag fieldTag = TagCreator.input();
+    InputTag fieldTag = TagCreator.input();
     return new FieldWithLabel(fieldTag).setFieldType("date");
   }
 
   public static FieldWithLabel textArea() {
-    Tag fieldTag = textarea();
+    TextareaTag fieldTag = textarea();
     return new FieldWithLabel(fieldTag).setFieldType("text");
   }
 
   public static FieldWithLabel email() {
-    Tag fieldTag = TagCreator.input();
+    InputTag fieldTag = TagCreator.input();
     return new FieldWithLabel(fieldTag).setFieldType("email");
   }
 
