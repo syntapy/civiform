@@ -12,6 +12,9 @@ import auth.CiviFormProfile;
 import com.typesafe.config.Config;
 import controllers.admin.routes;
 
+import j2html.tags.specialized.DivTag;
+import j2html.tags.specialized.LabelTag;
+
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -49,7 +52,7 @@ public class ProgramAdministratorProgramListView extends BaseHtmlView {
     }
 
     String title = "Your programs";
-    Tag contentDiv =
+    DivTag contentDiv =
         div()
             .withClasses(Styles.PX_20)
             .with(
@@ -76,7 +79,7 @@ public class ProgramAdministratorProgramListView extends BaseHtmlView {
     return activeProgram.get();
   }
 
-  public Tag renderProgramListItem(
+  public DivTag renderProgramListItem(
       Optional<ProgramDefinition> activeProgram, Optional<ProgramDefinition> draftProgram) {
     String programStatusText = extractProgramStatusText(draftProgram, activeProgram);
     // String lastEditText = "Last updated 2 hours ago."; // TODO(Issue #1657): Need to generate
@@ -90,7 +93,7 @@ public class ProgramAdministratorProgramListView extends BaseHtmlView {
     String blockCountText = "Screens: " + displayProgram.getBlockCount();
     String questionCountText = "Questions: " + displayProgram.getQuestionCount();
 
-    Tag topContent =
+    DivTag topContent =
         div(
                 div(
                     p(programStatusText).withClasses(Styles.TEXT_SM, Styles.TEXT_GRAY_700),
@@ -107,11 +110,11 @@ public class ProgramAdministratorProgramListView extends BaseHtmlView {
                         StyleUtils.applyUtilityClass(StyleUtils.RESPONSIVE_MD, Styles.MR_4)))
             .withClasses(Styles.FLEX);
 
-    Tag midContent =
+    DivTag midContent =
         div(programDescriptionText)
             .withClasses(Styles.TEXT_GRAY_700, Styles.TEXT_BASE, Styles.MB_8, Styles.LINE_CLAMP_3);
 
-    Tag bottomContent =
+    DivTag bottomContent =
         div(
                 // TODO(Issue #1657): Create accurate lastEditText and readd.
                 // p(lastEditText).withClasses(Styles.TEXT_GRAY_700, Styles.ITALIC),
@@ -119,7 +122,7 @@ public class ProgramAdministratorProgramListView extends BaseHtmlView {
                 maybeRenderViewApplicationsLink(viewApplicationsLinkText, activeProgram))
             .withClasses(Styles.FLEX, Styles.TEXT_SM, Styles.W_FULL);
 
-    Tag programDeepLink =
+    LabelTag programDeepLink =
         label("Deep link, use this URL to link to this program from outside of CiviForm:")
             .withClasses(Styles.W_FULL)
             .with(
@@ -133,7 +136,7 @@ public class ProgramAdministratorProgramListView extends BaseHtmlView {
                     .withClasses(Styles.W_FULL, Styles.MB_2)
                     .attr("type", "text"));
 
-    Tag innerDiv =
+    DivTag innerDiv =
         div(topContent, midContent, programDeepLink, bottomContent)
             .withClasses(
                 Styles.BORDER, Styles.BORDER_GRAY_300, Styles.BG_WHITE, Styles.ROUNDED, Styles.P_4);
@@ -155,7 +158,7 @@ public class ProgramAdministratorProgramListView extends BaseHtmlView {
     throw new IllegalArgumentException("Program neither active nor draft.");
   }
 
-  Tag maybeRenderViewApplicationsLink(String text, Optional<ProgramDefinition> activeProgram) {
+  DivTag maybeRenderViewApplicationsLink(String text, Optional<ProgramDefinition> activeProgram) {
     if (activeProgram.isPresent()) {
       String viewApplicationsLink =
           routes.AdminApplicationController.index(
