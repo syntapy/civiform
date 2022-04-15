@@ -11,6 +11,10 @@ import static j2html.TagCreator.text;
 import com.google.common.collect.ImmutableSet;
 import j2html.TagCreator;
 
+import j2html.tags.specialized.H1Tag;
+import j2html.tags.specialized.DivTag;
+import j2html.tags.specialized.ButtonTag;
+import j2html.tags.specialized.FormTag;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -37,33 +41,33 @@ import views.style.Styles;
  */
 public abstract class BaseHtmlView {
 
-  public static Tag renderHeader(String headerText, String... additionalClasses) {
+  public static H1Tag renderHeader(String headerText, String... additionalClasses) {
     return h1(headerText).withClasses(Styles.MB_4, StyleUtils.joinStyles(additionalClasses));
   }
 
-  public static ContainerTag fieldErrors(
+  public static DivTag fieldErrors(
       Messages messages, ImmutableSet<ValidationErrorMessage> errors) {
     return div(each(errors, error -> div(error.getMessage(messages))))
         .withClasses(BaseStyles.FORM_ERROR_TEXT_BASE);
   }
 
-  public static Tag button(String textContents) {
+  public static ButtonTag button(String textContents) {
     return TagCreator.button(text(textContents)).attr("type", "button");
   }
 
-  public static Tag button(String id, String textContents) {
+  public static ButtonTag button(String id, String textContents) {
     return button(textContents).withId(id);
   }
 
-  protected static Tag submitButton(String textContents) {
+  protected static ButtonTag submitButton(String textContents) {
     return TagCreator.button(text(textContents)).attr("type", "submit");
   }
 
-  protected static Tag submitButton(String id, String textContents) {
+  protected static ButtonTag submitButton(String id, String textContents) {
     return submitButton(textContents).withId(id);
   }
 
-  protected static Tag redirectButton(String id, String text, String redirectUrl) {
+  protected static ButtonTag redirectButton(String id, String text, String redirectUrl) {
     return button(id, text)
         .attr("onclick", String.format("window.location = '%s';", redirectUrl))
         .withClasses(Styles.M_2);
@@ -73,7 +77,7 @@ public abstract class BaseHtmlView {
    * Generates a hidden HTML input tag containing a signed CSRF token. The token and tag must be
    * present in all CiviForm forms.
    */
-  protected static Tag makeCsrfTokenInputTag(Http.Request request) {
+  protected static InputTag makeCsrfTokenInputTag(Http.Request request) {
     return input().isHidden().attr("value", getCsrfToken(request)).attr("name", "csrfToken");
   }
 
@@ -86,9 +90,9 @@ public abstract class BaseHtmlView {
     return datetime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd 'at' h:mm a"));
   }
 
-  protected ContainerTag renderPaginationDiv(
+  protected DivTag renderPaginationDiv(
       int page, int pageCount, Function<Integer, Call> linkForPage) {
-    ContainerTag div = div();
+    DivTag div = div();
     if (page <= 1) {
       div.with(new LinkElement().setText("∅").asButton());
     } else {
@@ -108,7 +112,7 @@ public abstract class BaseHtmlView {
     return div.with(br());
   }
 
-  protected ContainerTag renderSearchForm(
+  protected FormTag renderSearchForm(
       Http.Request request, Optional<String> search, Call searchCall) {
     return renderSearchForm(
         request,
@@ -118,7 +122,7 @@ public abstract class BaseHtmlView {
         /* labelText= */ Optional.empty());
   }
 
-  protected ContainerTag renderSearchForm(
+  protected FormTag renderSearchForm(
       Http.Request request,
       Optional<String> search,
       Call searchCall,
