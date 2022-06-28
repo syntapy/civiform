@@ -215,6 +215,9 @@ export class ApplicantQuestions {
   async clickUpload() {
     await this.page.click('text="Upload"')
     await waitForPageJsLoad(this.page)
+
+    // Wait for 2 seconds to make sure the file is uploaded.
+    await this.page.waitFor(2000)
   }
 
   async deleteEnumeratorEntity(entityName: string) {
