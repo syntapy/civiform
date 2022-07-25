@@ -18,3 +18,4 @@ tailwindCli := {
 dist := (dist dependsOn tailwindCli).value
 stage := (stage dependsOn tailwindCli).value
 test := (Test / test dependsOn tailwindCli).value
+tailwindCli := (tailwindCli dependsOn Compile / compile).value

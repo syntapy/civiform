@@ -7,6 +7,8 @@ import com.typesafe.sbt.gzip.Import.gzip
 import com.typesafe.sbt.digest.Import.digest
 import com.github.sbt.jacoco.JacocoPlugin.autoImport._
 
+lazy val hello = taskKey[Unit]("hello")
+
 lazy val root = (project in file("."))
   .enablePlugins(PlayJava, PlayEbean, SbtWeb)
   .settings(
@@ -163,7 +165,14 @@ lazy val root = (project in file("."))
       startupTransition compose previous
     }
   )
-  .settings(excludeTailwindGeneration: _*)
+  .settings(
+    excludeTailwindGeneration: _*
+  )
+  .settings(
+    hello := {
+      println("Hello, world!")
+    }
+  )
 //jacoco report setting
 jacocoReportSettings := JacocoReportSettings()
   .withFormats(JacocoReportFormats.HTML, JacocoReportFormats.XML)
