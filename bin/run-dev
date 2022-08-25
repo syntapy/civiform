@@ -67,10 +67,11 @@ echo "Civiform starting locally at http://localhost:9000/loginForm"
 
 # Attach to the civiform container.
 docker::compose_dev up civiform \
-  --force-recreate \
   --no-deps \
   --wait \
   -d
+
+docker::run_shell_command npx tailwindcss build -i ./app/assets/stylesheets/styles.css -o ./public/stylesheets/tailwind.css --watch &
 
 docker attach "${COMPOSE_PROJECT_NAME}-civiform-1"
 
