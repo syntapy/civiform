@@ -166,12 +166,14 @@ lazy val root = (project in file("."))
     }
   )
   .settings(
-    excludeTailwindGeneration: _*
+    excludeTailwindGeneration: _*,
   )
   .settings(
+    name := "test hello",
     hello := {
-      println("Hello, world!")
-    }
+      println("hello")
+    },
+    Compile / compile := (Compile / compile).dependsOn(hello).value
   )
 //jacoco report setting
 jacocoReportSettings := JacocoReportSettings()
