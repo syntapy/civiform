@@ -6,8 +6,9 @@ import com.typesafe.sbt.web.Import._
 import com.typesafe.sbt.gzip.Import.gzip
 import com.typesafe.sbt.digest.Import.digest
 import com.github.sbt.jacoco.JacocoPlugin.autoImport._
+import scala.sys.process._
 
-lazy val hello = taskKey[Unit]("hello")
+lazy val buildTailwindCSS = taskKey[Unit]("build tailwind css")
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayJava, PlayEbean, SbtWeb)
@@ -168,13 +169,14 @@ lazy val root = (project in file("."))
   .settings(
     excludeTailwindGeneration: _*,
   )
-  .settings(
-    name := "test hello",
-    hello := {
-      println("hello")
-    },
-    Compile / compile := (Compile / compile).dependsOn(hello).value
-  )
+  //.settings(
+  //  name := "build tailwind.css file",
+  //  buildTailwindCSS := {
+  //    //"npx tailwindcss build -i ./app/assets/stylesheets/styles.css -o ./public/stylesheets/tailwind.css" !
+  //    "ls" !
+  //  },
+  //  Compile / compile := (Compile / compile).dependsOn(buildTailwindCSS).value
+  //)
 //jacoco report setting
 jacocoReportSettings := JacocoReportSettings()
   .withFormats(JacocoReportFormats.HTML, JacocoReportFormats.XML)
@@ -190,9 +192,10 @@ lazy val startupTransition: State => State = { s: State =>
 // Ignore the tailwind.sbt generated css file when watching for recompilation.
 // Since this file is generated when build.sbt is loaded, it causes the server
 // to reload when stopping/starting the server on watch mode.
-lazy val excludeTailwindGeneration = Seq(watchSources := {
+lazy val excludeTailwindGeneration = Seq(
+watchSources := {
   val fileToExclude =
-    "server/public/stylesheets/tailwind.css"
+    "public/stylesheets/tailwind.css"
   val customSourcesFilter = new FileFilter {
     override def accept(f: File): Boolean =
       f.getPath.contains(fileToExclude)
@@ -207,7 +210,8 @@ lazy val excludeTailwindGeneration = Seq(watchSources := {
       source.recursive
     )
   }
-})
+}
+)
 
 JsEngineKeys.engineType := JsEngineKeys.EngineType.Node
 
@@ -218,7 +222,6 @@ dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.3"
 )
 resolveFromWebjarsNodeModulesDir := true
-playRunHooks += TailwindBuilder(baseDirectory.value)
 // Reload when the build.sbt file changes.
 Global / onChangedBuildSource := ReloadOnSourceChanges
 // uncomment to show debug logging.
