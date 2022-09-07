@@ -185,7 +185,7 @@ lazy val startupTransition: State => State = { s: State =>
 lazy val excludeTailwindGeneration = Seq(
 watchSources := {
   val fileToExclude =
-    "public/stylesheets/tailwind.css"
+    "server/public/stylesheets/tailwind.css"
   val customSourcesFilter = new FileFilter {
     override def accept(f: File): Boolean =
       f.getPath.contains(fileToExclude)
@@ -212,6 +212,7 @@ dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.3"
 )
 resolveFromWebjarsNodeModulesDir := true
+//playRunHooks += TailwindBuilder(baseDirectory.value)
 // Reload when the build.sbt file changes.
 Global / onChangedBuildSource := ReloadOnSourceChanges
 // uncomment to show debug logging.
