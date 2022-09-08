@@ -159,7 +159,7 @@ public class LoginForm extends BaseHtmlView {
     content.with(
         div()
             .withClasses(
-                "bg-gray-100",
+                "bg-red-600",
                 "py-4",
                 "px-8",
                 "w-full",
