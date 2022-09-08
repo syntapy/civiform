@@ -11,21 +11,21 @@ abstract class ProgramBlockView extends BaseHtmlView {
   /** Renders a div with internal/admin program information. */
   protected final DivTag renderProgramInfo(ProgramDefinition programDefinition) {
     DivTag programStatus =
-        div("Draft").withId("program-status").withClasses(Styles.TEXT_XS, Styles.UPPERCASE);
+        div("Draft").withId("program-status").withClasses("text-xs", "uppercase");
     DivTag programTitle =
         div(programDefinition.adminName())
             .withId("program-title")
-            .withClasses(Styles.TEXT_3XL, Styles.PB_3);
+            .withClasses("text-3xl", "pb-3");
     DivTag programDescription =
-        div(programDefinition.adminDescription()).withClasses(Styles.TEXT_SM);
+        div(programDefinition.adminDescription()).withClasses("text-sm");
 
     return div(programStatus, programTitle, programDescription)
         .withClasses(
-            Styles.BG_GRAY_100,
-            Styles.TEXT_GRAY_800,
-            Styles.SHADOW_MD,
-            Styles.P_8,
-            Styles.PT_4,
-            Styles._MX_2);
+            "bg-gray-100",
+            "text-gray-800",
+            "shadow-md",
+            "p-8",
+            "pt-4",
+            "-mx-2");
   }
 }

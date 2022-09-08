@@ -64,7 +64,7 @@ abstract class ApplicantQuestionRendererImpl implements ApplicantQuestionRendere
                     .with(
                         TextFormatter.createLinksAndEscapeText(
                             question.getQuestionHelpText(), TextFormatter.UrlOpenAction.NewTab)))
-            .withClasses(Styles.MB_4);
+            .withClasses("mb-4");
 
     ImmutableMap<Path, ImmutableSet<ValidationErrorMessage>> validationErrors;
     switch (params.errorDisplayMode()) {
@@ -92,7 +92,7 @@ abstract class ApplicantQuestionRendererImpl implements ApplicantQuestionRendere
       String requiredQuestionMessage = messages.at(MessageKey.VALIDATION_REQUIRED.getKeyName());
       questionSecondaryTextDiv.with(
           div()
-              .withClasses(Styles.P_1, Styles.TEXT_RED_600)
+              .withClasses("p-1", "text-red-600")
               .withText("*" + requiredQuestionMessage));
     }
 
@@ -135,7 +135,7 @@ abstract class ApplicantQuestionRendererImpl implements ApplicantQuestionRendere
 
     return div()
         .withId(question.getContextualizedPath().toString())
-        .withClasses(Styles.MX_AUTO, Styles.MB_8, getReferenceClass(), getRequiredClass())
+        .withClasses("mx-auto", "mb-8", getReferenceClass(), getRequiredClass())
         .with(questionTag);
   }
 }

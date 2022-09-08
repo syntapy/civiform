@@ -36,10 +36,10 @@ public final class EnumeratorQuestionRenderer extends ApplicantQuestionRendererI
   private static final String ENUMERATOR_FIELD_CLASSES =
       StyleUtils.joinStyles(
           ReferenceClasses.ENUMERATOR_FIELD,
-          Styles.GRID,
-          Styles.GRID_COLS_2,
-          Styles.GAP_4,
-          Styles.MB_4);
+          "grid",
+          "grid-cols-2",
+          "gap-4",
+          "mb-4");
 
   public EnumeratorQuestionRenderer(ApplicantQuestion question) {
     super(question, InputFieldType.COMPOSITE);
@@ -86,7 +86,7 @@ public final class EnumeratorQuestionRenderer extends ApplicantQuestionRendererI
                                 localizedEntityType)))
                     .withClasses(
                         ApplicantStyles.BUTTON_ENUMERATOR_ADD_ENTITY,
-                        StyleUtils.disabled(Styles.BG_GRAY_200, Styles.TEXT_GRAY_400)))
+                        StyleUtils.disabled("bg-gray-200", "text-gray-400")))
             .with(
                 // Add the hidden enumerator field template.
                 enumeratorField(
@@ -95,7 +95,7 @@ public final class EnumeratorQuestionRenderer extends ApplicantQuestionRendererI
                         question.getContextualizedPath(),
                         /* existingEntity= */ Optional.empty(),
                         /* existingIndex= */ Optional.empty(),
-                        /* extraStyle= */ Optional.of(Styles.HIDDEN),
+                        /* extraStyle= */ Optional.of("hidden"),
                         // Do not submit this with the form.
                         /* isDisabled= */ true)
                     .withId(ENUMERATOR_FIELD_TEMPLATE_ID));
@@ -159,6 +159,6 @@ public final class EnumeratorQuestionRenderer extends ApplicantQuestionRendererI
         .withId(DELETE_ENTITY_TEMPLATE_ID)
         .withName(Path.empty().join(Scalar.DELETE_ENTITY).asArrayElement().toString())
         .isDisabled() // do not submit this with the form
-        .withClasses(Styles.HIDDEN);
+        .withClasses("hidden");
   }
 }

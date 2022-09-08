@@ -74,8 +74,8 @@ public class RadioButtonQuestionRenderer extends ApplicantQuestionRendererImpl {
 
     return div()
         .withClasses(
-            Styles.MY_2,
-            Styles.RELATIVE,
+            "my-2",
+            "relative",
             ReferenceClasses.MULTI_OPTION_QUESTION_OPTION,
             ReferenceClasses.RADIO_OPTION,
             BaseStyles.RADIO_LABEL,

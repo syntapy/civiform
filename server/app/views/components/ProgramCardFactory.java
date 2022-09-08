@@ -49,45 +49,45 @@ public final class ProgramCardFactory {
               renderProgramRow(
                   /* isActive = */ true,
                   cardData.activeProgram().get(),
-                  cardData.draftProgram().isPresent() ? Styles.BORDER_T : ""));
+                  cardData.draftProgram().isPresent() ? "border-t" : ""));
     }
 
     DivTag titleAndStatus =
         div()
-            .withClass(Styles.FLEX)
+            .withClass("flex")
             .with(
                 p(programTitleText)
                     .withClasses(
                         ReferenceClasses.ADMIN_PROGRAM_CARD_TITLE,
-                        Styles.W_1_4,
-                        Styles.PY_7,
-                        Styles.TEXT_BLACK,
-                        Styles.FONT_BOLD,
-                        Styles.TEXT_XL),
+                        "w-1/4",
+                        "py-7",
+                        "text-black",
+                        "font-bold",
+                        "text-xl"),
                 statusDiv.withClasses(
-                    Styles.FLEX_GROW,
-                    Styles.TEXT_SM,
-                    StyleUtils.responsiveLarge(Styles.TEXT_BASE)));
+                    "flex-grow",
+                    "text-sm",
+                    StyleUtils.responsiveLarge("text-base")));
 
     return div()
         .withClasses(
             ReferenceClasses.ADMIN_PROGRAM_CARD,
-            Styles.W_FULL,
-            Styles.MY_4,
-            Styles.PL_6,
-            Styles.BORDER,
-            Styles.BORDER_GRAY_300,
-            Styles.ROUNDED_LG)
+            "w-full",
+            "my-4",
+            "pl-6",
+            "border",
+            "border-gray-300",
+            "rounded-lg")
         .with(
             titleAndStatus,
             p(programDescriptionText)
                 .withClasses(
-                    Styles.W_3_4,
-                    Styles.MB_8,
-                    Styles.PT_4,
-                    Styles.LINE_CLAMP_3,
-                    Styles.TEXT_GRAY_700,
-                    Styles.TEXT_BASE))
+                    "w-3/4",
+                    "mb-8",
+                    "pt-4",
+                    "line-clamp-3",
+                    "text-gray-700",
+                    "text-base"))
         // Add data attributes used for client-side sorting.
         .withData("last-updated-millis", Long.toString(extractLastUpdated(cardData).toEpochMilli()))
         .withData("name", programTitleText);
@@ -123,75 +123,75 @@ public final class ProgramCardFactory {
             .withClasses(
                 AdminStyles.TERTIARY_BUTTON_STYLES,
                 ReferenceClasses.WITH_DROPDOWN,
-                Styles.H_12,
-                programRow.extraRowActions().size() == 0 ? Styles.INVISIBLE : "");
+                "h-12",
+                programRow.extraRowActions().size() == 0 ? "invisible" : "");
 
     return div()
         .withClasses(
-            Styles.PY_7,
-            Styles.FLEX,
-            Styles.FLEX_ROW,
-            StyleUtils.hover(Styles.BG_GRAY_100),
+            "py-7",
+            "flex",
+            "flex-row",
+            StyleUtils.hover("bg-gray-100"),
             StyleUtils.joinStyles(extraStyles))
         .with(
             p().withClasses(
                     badgeBGColor,
                     badgeFillColor,
-                    Styles.ML_2,
-                    StyleUtils.responsiveXLarge(Styles.ML_8),
-                    Styles.FONT_MEDIUM,
-                    Styles.ROUNDED_FULL,
-                    Styles.FLEX,
-                    Styles.FLEX_ROW,
-                    Styles.GAP_X_2,
-                    Styles.PLACE_ITEMS_CENTER,
-                    Styles.JUSTIFY_CENTER)
+                    "ml-2",
+                    StyleUtils.responsiveXLarge("ml-8"),
+                    "font-medium",
+                    "rounded-full",
+                    "flex",
+                    "flex-row",
+                    "gap-x-2",
+                    "place-items-center",
+                    "justify-center")
                 .withStyle("min-width:90px")
                 .with(
                     Icons.svg(Icons.NOISE_CONTROL_OFF)
-                        .withClasses(Styles.INLINE_BLOCK, Styles.ML_3_5),
-                    span(badgeText).withClass(Styles.MR_4)),
+                        .withClasses("inline-block", "ml-3.5"),
+                    span(badgeText).withClass("mr-4")),
             div()
-                .withClasses(Styles.ML_4, StyleUtils.responsiveXLarge(Styles.ML_10))
+                .withClasses("ml-4", StyleUtils.responsiveXLarge("ml-10"))
                 .with(
                     p().with(
                             span(updatedPrefix),
                             span(formattedUpdateTime)
                                 .withClasses(
-                                    Styles.FONT_SEMIBOLD,
-                                    Styles.HIDDEN,
-                                    StyleUtils.responsiveLarge(Styles.INLINE)),
+                                    "font-semibold",
+                                    "hidden",
+                                    StyleUtils.responsiveLarge("inline")),
                             span(formattedUpdateDate)
                                 .withClasses(
-                                    Styles.FONT_SEMIBOLD,
-                                    StyleUtils.responsiveLarge(Styles.HIDDEN))),
+                                    "font-semibold",
+                                    StyleUtils.responsiveLarge("hidden"))),
                     p().with(
-                            span(String.format("%d", blockCount)).withClass(Styles.FONT_SEMIBOLD),
+                            span(String.format("%d", blockCount)).withClass("font-semibold"),
                             span(blockCount == 1 ? " screen, " : " screens, "),
                             span(String.format("%d", questionCount))
-                                .withClass(Styles.FONT_SEMIBOLD),
+                                .withClass("font-semibold"),
                             span(questionCount == 1 ? " question" : " questions"))),
-            div().withClass(Styles.FLEX_GROW),
+            div().withClass("flex-grow"),
             div()
-                .withClasses(Styles.FLEX, Styles.SPACE_X_2, Styles.PR_6, Styles.FONT_MEDIUM)
+                .withClasses("flex", "space-x-2", "pr-6", "font-medium")
                 .with(programRow.rowActions())
                 .with(
                     div()
-                        .withClass(Styles.RELATIVE)
+                        .withClass("relative")
                         .with(
                             extraActionsButton,
                             div()
                                 .withId(extraActionsButtonId + "-dropdown")
                                 .withClasses(
-                                    Styles.HIDDEN,
-                                    Styles.FLEX,
-                                    Styles.FLEX_COL,
-                                    Styles.BORDER,
-                                    Styles.BG_WHITE,
-                                    Styles.ABSOLUTE,
-                                    Styles.RIGHT_0,
-                                    Styles.W_56,
-                                    Styles.Z_50)
+                                    "hidden",
+                                    "flex",
+                                    "flex-col",
+                                    "border",
+                                    "bg-white",
+                                    "absolute",
+                                    "right-0",
+                                    "w-56",
+                                    "z-50")
                                 .with(programRow.extraRowActions()))));
   }
 

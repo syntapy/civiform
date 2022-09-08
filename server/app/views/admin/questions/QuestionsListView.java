@@ -82,7 +82,7 @@ public final class QuestionsListView extends BaseHtmlView {
                 renderHeader(title),
                 CreateQuestionButton.renderCreateQuestionButton(
                     controllers.admin.routes.AdminQuestionController.index().url()),
-                div(questionTableAndModals.getLeft()).withClasses(Styles.M_4),
+                div(questionTableAndModals.getLeft()).withClasses("m-4"),
                 renderSummary(activeAndDraftQuestions));
 
     Http.Flash flash = request.flash();
@@ -102,7 +102,7 @@ public final class QuestionsListView extends BaseHtmlView {
     // where we have a single entry for a question that is active and has a draft.
     return div(String.format(
             "Total Questions: %d", activeAndDraftQuestions.getQuestionNames().size()))
-        .withClasses(Styles.FLOAT_RIGHT, Styles.TEXT_BASE, Styles.PX_4, Styles.MY_2);
+        .withClasses("float-right", "text-base", "px-4", "my-2");
   }
 
   /** Renders the full table. */
@@ -116,7 +116,7 @@ public final class QuestionsListView extends BaseHtmlView {
             .collect(ImmutableList.toImmutableList());
     TableTag tableTag =
         table()
-            .withClasses(Styles.BORDER, Styles.BORDER_GRAY_300, Styles.SHADOW_MD, Styles.W_FULL)
+            .withClasses("border", "border-gray-300", "shadow-md", "w-full")
             .with(renderQuestionTableHeaderRow())
             .with(tbody(each(tableRowAndModals, (tableRowAndModal) -> tableRowAndModal.getLeft())));
     ImmutableList<Modal> modals =
@@ -130,16 +130,16 @@ public final class QuestionsListView extends BaseHtmlView {
   /** Render the question table header row. */
   private TheadTag renderQuestionTableHeaderRow() {
     return thead(
-        tr().withClasses(Styles.BORDER_B, Styles.BG_GRAY_200, Styles.TEXT_LEFT)
-            .with(th("Info").withClasses(BaseStyles.TABLE_CELL_STYLES, Styles.W_2_12))
-            .with(th("Question text").withClasses(BaseStyles.TABLE_CELL_STYLES, Styles.W_3_12))
+        tr().withClasses("border-b", "bg-gray-200", "text-left")
+            .with(th("Info").withClasses(BaseStyles.TABLE_CELL_STYLES, "w-2/12"))
+            .with(th("Question text").withClasses(BaseStyles.TABLE_CELL_STYLES, "w-3/12"))
             .with(
-                th("Supported languages").withClasses(BaseStyles.TABLE_CELL_STYLES, Styles.W_2_12))
+                th("Supported languages").withClasses(BaseStyles.TABLE_CELL_STYLES, "w-2/12"))
             .with(
-                th("Referencing programs").withClasses(BaseStyles.TABLE_CELL_STYLES, Styles.W_2_12))
+                th("Referencing programs").withClasses(BaseStyles.TABLE_CELL_STYLES, "w-2/12"))
             .with(
                 th("Actions")
-                    .withClasses(BaseStyles.TABLE_CELL_STYLES, Styles.PL_8, Styles.W_2_12)));
+                    .withClasses(BaseStyles.TABLE_CELL_STYLES, "pl-8", "w-2/12")));
   }
 
   /**
@@ -165,10 +165,10 @@ public final class QuestionsListView extends BaseHtmlView {
     TrTag rowTag =
         tr().withClasses(
                 ReferenceClasses.ADMIN_QUESTION_TABLE_ROW,
-                Styles.BORDER_B,
-                Styles.BORDER_GRAY_300,
-                StyleUtils.hover(Styles.BG_GRAY_100),
-                Styles.CURSOR_POINTER)
+                "border-b",
+                "border-gray-300",
+                StyleUtils.hover("bg-gray-100"),
+                "cursor-pointer")
             .with(renderInfoCell(latestDefinition))
             .with(renderQuestionTextCell(latestDefinition))
             .with(renderSupportedLanguages(latestDefinition))
@@ -188,8 +188,8 @@ public final class QuestionsListView extends BaseHtmlView {
   }
 
   private TdTag renderInfoCell(QuestionDefinition definition) {
-    return td().with(div(definition.getName()).withClasses(Styles.FONT_SEMIBOLD))
-        .with(div(definition.getDescription()).withClasses(Styles.TEXT_XS))
+    return td().with(div(definition.getName()).withClasses("font-semibold"))
+        .with(div(definition.getDescription()).withClasses("text-xs"))
         .withClasses(BaseStyles.TABLE_CELL_STYLES);
   }
 
@@ -207,8 +207,8 @@ public final class QuestionsListView extends BaseHtmlView {
     } catch (TranslationNotFoundException e) { // Ignore. Leaving blank
     }
 
-    return td().with(div(questionText).withClasses(Styles.FONT_SEMIBOLD))
-        .with(div(questionHelpText).withClasses(Styles.TEXT_XS))
+    return td().with(div(questionText).withClasses("font-semibold"))
+        .with(div(questionHelpText).withClasses("text-xs"))
         .withClasses(BaseStyles.TABLE_CELL_STYLES);
   }
 
@@ -239,7 +239,7 @@ public final class QuestionsListView extends BaseHtmlView {
                 activeAndDraftQuestions.draftVersionHasAnyEdits(),
                 span(String.format(" & %d draft", referencingPrograms.draftReferences().size())))
             .with(span(" programs"))
-            .withClass(Styles.FONT_SEMIBOLD);
+            .withClass("font-semibold");
 
     TdTag tag =
         td().with(p().with(span("Used across "), referencingProgramsCount))
@@ -250,11 +250,11 @@ public final class QuestionsListView extends BaseHtmlView {
       tag.with(
           a().withId(maybeReferencingProgramsModal.get().getTriggerButtonId())
               .withClasses(
-                  Styles.CURSOR_POINTER,
-                  Styles.FONT_SEMIBOLD,
-                  Styles.UNDERLINE,
+                  "cursor-pointer",
+                  "font-semibold",
+                  "underline",
                   BaseStyles.TEXT_SEATTLE_BLUE,
-                  StyleUtils.hover(Styles.TEXT_BLACK))
+                  StyleUtils.hover("text-black"))
               .withText("See list"));
     }
     return Pair.of(tag, maybeReferencingProgramsModal);
@@ -278,7 +278,7 @@ public final class QuestionsListView extends BaseHtmlView {
     }
 
     DivTag referencingProgramModalContent =
-        div().withClasses(Styles.P_6, Styles.FLEX_ROW, Styles.SPACE_Y_6);
+        div().withClasses("p-6", "flex-row", "space-y-6");
     if (modalHeader.isPresent()) {
       referencingProgramModalContent.with(modalHeader.get());
     }
@@ -293,7 +293,7 @@ public final class QuestionsListView extends BaseHtmlView {
         p("Note: This list does not automatically refresh. If edits are made to a program"
                 + " in a separate tab, they won't be reflected until the page has been"
                 + " refreshed.")
-            .withClass(Styles.TEXT_SM));
+            .withClass("text-sm"));
     return Optional.of(
         Modal.builder(Modal.randomModalId(), referencingProgramModalContent)
             .setModalTitle(String.format("Programs including %s", questionName))
@@ -310,13 +310,13 @@ public final class QuestionsListView extends BaseHtmlView {
             .sorted(Comparator.comparing(ProgramDefinition::adminName))
             .collect(ImmutableList.toImmutableList());
     return div()
-        .with(p(title).withClass(Styles.FONT_SEMIBOLD))
-        .condWith(sortedReferencingPrograms.isEmpty(), p("None").withClass(Styles.PL_5))
+        .with(p(title).withClass("font-semibold"))
+        .condWith(sortedReferencingPrograms.isEmpty(), p("None").withClass("pl-5"))
         .condWith(
             !sortedReferencingPrograms.isEmpty(),
             div()
                 .with(
-                    ul().withClasses(Styles.LIST_DISC, Styles.LIST_INSIDE)
+                    ul().withClasses("list-disc", "list-inside")
                         .with(
                             each(
                                 sortedReferencingPrograms,
@@ -357,10 +357,10 @@ public final class QuestionsListView extends BaseHtmlView {
     TdTag td =
         td().withClasses(
                 BaseStyles.TABLE_CELL_STYLES,
-                Styles.FLEX,
-                Styles.SPACE_X_2,
-                Styles.PR_6,
-                Styles.FONT_MEDIUM);
+                "flex",
+                "space-x-2",
+                "pr-6",
+                "font-medium");
     ImmutableList.Builder<DomContent> extraActions = ImmutableList.builder();
     ButtonTag editButton = null;
     if (active.isPresent()) {
@@ -398,27 +398,27 @@ public final class QuestionsListView extends BaseHtmlView {
             .withClasses(
                 AdminStyles.TERTIARY_BUTTON_STYLES,
                 ReferenceClasses.WITH_DROPDOWN,
-                Styles.H_12,
-                extraActions.build().isEmpty() ? Styles.INVISIBLE : "");
+                "h-12",
+                extraActions.build().isEmpty() ? "invisible" : "");
     td.with(
         editButton,
-        div().withClasses(Styles.FLEX_GROW),
+        div().withClasses("flex-grow"),
         div()
-            .withClass(Styles.RELATIVE)
+            .withClass("relative")
             .with(
                 extraActionsButton,
                 div()
                     .withId(extraActionsButtonId + "-dropdown")
                     .withClasses(
-                        Styles.HIDDEN,
-                        Styles.FLEX,
-                        Styles.FLEX_COL,
-                        Styles.BORDER,
-                        Styles.BG_WHITE,
-                        Styles.ABSOLUTE,
-                        Styles.RIGHT_0,
-                        Styles.W_56,
-                        Styles.Z_50)
+                        "hidden",
+                        "flex",
+                        "flex-col",
+                        "border",
+                        "bg-white",
+                        "absolute",
+                        "right-0",
+                        "w-56",
+                        "z-50")
                     .with(extraActions.build())));
 
     return Pair.of(td, archiveOptionsAndModal.getRight());
@@ -464,11 +464,11 @@ public final class QuestionsListView extends BaseHtmlView {
         DivTag modalHeader =
             div()
                 .withClasses(
-                    Styles.P_2,
-                    Styles.BORDER,
-                    Styles.BORDER_GRAY_400,
-                    Styles.BG_GRAY_200,
-                    Styles.TEXT_SM)
+                    "p-2",
+                    "border",
+                    "border-gray-400",
+                    "bg-gray-200",
+                    "text-sm")
                 .with(
                     span(
                         "This question cannot be archived since there are still programs"
