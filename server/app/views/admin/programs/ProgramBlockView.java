@@ -5,7 +5,7 @@ import static j2html.TagCreator.div;
 import j2html.tags.specialized.DivTag;
 import services.program.ProgramDefinition;
 import views.BaseHtmlView;
-import views.style.Styles;
+
 
 abstract class ProgramBlockView extends BaseHtmlView {
   /** Renders a div with internal/admin program information. */

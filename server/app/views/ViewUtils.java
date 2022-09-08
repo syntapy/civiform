@@ -14,7 +14,7 @@ import j2html.tags.specialized.LinkTag;
 import j2html.tags.specialized.ScriptTag;
 import javax.inject.Inject;
 import views.components.Icons;
-import views.style.Styles;
+
 
 /** Utility class for accessing stateful view dependencies. */
 public final class ViewUtils {
