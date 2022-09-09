@@ -71,8 +71,6 @@ docker::compose_dev up civiform \
   --wait \
   -d
 
-docker::run_shell_command npx tailwindcss build -i ./app/assets/stylesheets/styles.css -o ./public/stylesheets/tailwind.css --watch &
-
 docker attach "${COMPOSE_PROJECT_NAME}-civiform-1"
 
 docker::compose_dev stop civiform
