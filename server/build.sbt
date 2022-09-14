@@ -156,6 +156,8 @@ lazy val root = (project in file("."))
     Test / pushRemoteCacheConfiguration := (Test / pushRemoteCacheConfiguration).value
       .withOverwrite(true),
 
+    //Compile / twirlCompileTemplates := (twirlCompileTemplates dependsOn tailwindCli).value,
+
     // Load the "remote" cache on startup.
     Global / onLoad := {
       val previous = (Global / onLoad).value
